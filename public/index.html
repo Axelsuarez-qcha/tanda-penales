@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tanda de Penales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Noche de Bombonera: azul profundo, oro como único acento, tablero de estadio en tipografía condensada.
+   Layout: una columna central; el arco es el protagonista de la pantalla de juego. */
+:root{
+  --bg:#06143a; --panel:#0c2155; --panel2:#112b69; --line:#27428f;
+  --gold:#f4c20d; --ink:#eef2ff; --muted:#9db0e0; --good:#3ddc97; --bad:#ff6b6b;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif; --body:'Public Sans',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45}
+body{min-height:100%;background:radial-gradient(1200px 500px at 50% -10%,#123a8f55,transparent),var(--bg)}
+#app{max-width:980px;margin:0 auto;padding:16px 16px 56px}
+h1,h2,h3{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;margin:0;line-height:1;text-wrap:balance}
+h1{font-size:clamp(52px,12vw,104px);font-weight:900}
+h2{font-size:32px;font-weight:800}
+h3{font-size:20px;font-weight:800;color:var(--gold)}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+button{font:inherit;color:inherit;cursor:pointer}
+.btn{background:var(--gold);color:#1a1400;border:0;border-radius:10px;padding:12px 18px;font-weight:700;font-size:16px}
+.btn:hover{filter:brightness(1.07)}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--gold)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;filter:none}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.grid3{grid-template-columns:1fr}}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{font-family:var(--display);font-weight:900;font-size:22px;letter-spacing:.05em;text-transform:uppercase}
+.brand b{color:var(--gold)}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.tag.live{background:#d92d2d;border-color:#d92d2d;color:#fff}
+/* home */
+.hero{padding:28px 0 8px}
+.hero h1 span{color:var(--gold)}
+.hero p{max-width:56ch;color:var(--muted);font-size:18px;margin-top:14px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0}
+@media(max-width:700px){.modes{grid-template-columns:1fr}}
+.mode{display:flex;flex-direction:column;gap:10px}
+.mode.off{opacity:.65}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;background:transparent;border:0;padding:9px 6px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--gold);color:#1a1400}
+.switch{display:flex;gap:10px;align-items:center;cursor:pointer;user-select:none}
+.switch input{width:20px;height:20px;accent-color:var(--gold)}
+ol.rules{padding-left:20px;margin:0;color:var(--muted)}
+ol.rules li{margin-bottom:6px}
+/* player cards */
+.pc{background:var(--panel2);border:1.5px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;text-align:left;position:relative;min-height:150px}
+button.pc:hover:not([disabled]){border-color:var(--gold);transform:translateY(-2px)}
+button.pc{transition:transform .12s,border-color .12s}
+button.pc[disabled]{opacity:.45;cursor:not-allowed}
+.pc .nm{font-weight:700;font-size:17px;line-height:1.15;padding-right:58px}
+.pc .ps{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.pc .ov{position:absolute;right:12px;top:8px;font-family:var(--display);font-weight:900;font-size:44px;color:var(--gold);line-height:1}
+.pc .ov small{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);font-family:var(--body);font-weight:600;text-align:right}
+.pc.gk{border-color:#3b66d9}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid}
+.chip.pos{color:var(--good);border-color:#2a8f66}
+.chip.neg{color:var(--bad);border-color:#a84747}
+.chip.gk{color:#9bb6ff;border-color:#3b66d9}
+.bars{display:flex;gap:4px;align-items:flex-end;height:28px}
+.bars i{flex:1;background:var(--gold);opacity:.8;border-radius:2px 2px 0 0;min-height:2px;position:relative}
+.bars.l{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;height:auto;font-size:11px;color:var(--muted)}
+.bars.l span{white-space:nowrap}
+.side h3{margin-bottom:6px}
+.stat{font-size:13px;color:var(--muted)}
+.blind{font-size:13px;color:var(--muted);font-style:italic}
+/* draft */
+.draft{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+@media(max-width:820px){.draft{grid-template-columns:1fr}}
+.ros{display:flex;flex-direction:column;gap:6px}
+.ros .it{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:6px 10px;border-radius:8px;background:var(--panel2)}
+.ros .it.gk{border-left:3px solid #6f93ff}
+.ros .it.empty{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+.feed{max-height:140px;overflow:auto;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.feed b{color:var(--ink)}
+.rolebox{border-left:4px solid var(--gold);padding:8px 12px;background:#ffffff0d;border-radius:0 10px 10px 0;margin-bottom:12px}
+/* order */
+.ord{display:flex;flex-direction:column;gap:8px}
+.ord .it{display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ord .n{font-family:var(--display);font-size:32px;font-weight:900;color:var(--gold);text-align:center}
+.ord .mv{display:flex;flex-direction:column;gap:4px}
+.ord .mv button{background:var(--panel);border:1px solid var(--line);border-radius:6px;width:34px;height:24px;line-height:1;padding:0}
+.ord .mv button:hover:not([disabled]){border-color:var(--gold)}
+.ord .mv button[disabled]{opacity:.3}
+.timer{height:8px;background:#ffffff18;border-radius:6px;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--gold);transition:width 1s linear}
+/* match */
+.board{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.board .tm{display:flex;flex-direction:column;gap:6px}
+.board .tm.r{align-items:flex-end}
+.board .tn{font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.04em}
+.board .tn.me{color:var(--gold)}
+.dots{display:flex;gap:6px}
+.dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:11px;font-weight:900}
+.dot.g{background:var(--good);border-color:var(--good);color:#04281a}
+.dot.m{background:transparent;border-color:var(--bad);color:var(--bad)}
+.dot.cur{border-color:var(--gold);box-shadow:0 0 0 3px #f4c20d44}
+.score{font-family:var(--display);font-weight:900;font-size:64px;line-height:1;letter-spacing:.02em;text-align:center}
+.score small{display:block;font-size:12px;letter-spacing:.14em;color:var(--muted);font-family:var(--body);font-weight:700;margin-top:4px}
+.stage{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-top:14px}
+@media(max-width:860px){.stage{grid-template-columns:1fr}}
+.goalwrap{background:linear-gradient(#0a3a1a,#0e4d24);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+.goalwrap svg{display:block;width:100%;height:auto}
+.zone{fill:#ffffff00;stroke:#ffffff22;cursor:pointer;transition:fill .12s}
+.zone:hover{fill:#f4c20d33}
+.zone.sel{fill:#f4c20d55}
+.zone.off{cursor:default}
+.zone.off:hover{fill:#ffffff00}
+.zl{font-family:var(--display);font-weight:800;font-size:26px;fill:#ffffffaa;pointer-events:none;letter-spacing:.06em}
+#ball{transition:transform .7s cubic-bezier(.2,.8,.3,1)}
+#keeper{transition:transform .5s cubic-bezier(.3,.9,.3,1)}
+.prompt{position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none}
+.prompt span{display:inline-block;background:#06143acc;border:1px solid var(--line);border-radius:99px;padding:4px 14px;font-weight:700;font-size:14px}
+.types{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.type{background:var(--panel);border:1.5px solid var(--line);border-radius:12px;padding:10px;text-align:left}
+.type[aria-pressed=true]{border-color:var(--gold);background:#f4c20d1c}
+.type b{display:block;font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.type span{font-size:12px;color:var(--muted);line-height:1.25;display:block}
+.type .risk{display:flex;gap:3px;margin-top:6px}
+.type .risk i{width:16px;height:5px;border-radius:3px;background:#ffffff22}
+.type .risk i.on{background:var(--gold)}
+.side{display:flex;flex-direction:column;gap:12px}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.vs .pc{min-height:0;padding:10px}
+.vs .pc .nm{font-size:15px;padding-right:44px}
+.vs .pc .ov{font-size:32px;top:6px}
+.vs .role{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.relato{background:#04102e;border:1px solid var(--line);border-radius:14px;padding:12px 14px;max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px}
+.relato p{margin:0;font-size:15px}
+.relato p.pre{color:var(--muted)}
+.relato p.go{color:var(--ink);font-weight:600}
+.relato p.good{color:var(--good);font-weight:700}
+.relato p.bad{color:var(--bad);font-weight:700}
+.relato p.sys{color:var(--gold);font-family:var(--display);font-size:20px;text-transform:uppercase;font-weight:800;letter-spacing:.03em}
+details.dbg{margin-top:10px;font-size:13px;color:var(--muted)}
+details.dbg summary{cursor:pointer;color:var(--ink)}
+details.dbg table{border-collapse:collapse;margin-top:6px;width:100%}
+details.dbg td{padding:3px 6px;border-bottom:1px solid #ffffff14}
+.final{text-align:center;padding:24px}
+.final h1{font-size:clamp(44px,10vw,88px)}
+.coin{width:120px;height:120px;border-radius:50%;margin:20px auto;background:radial-gradient(circle at 35% 30%,#ffe27a,#c79500 70%);color:#3a2a00;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:44px;box-shadow:inset 0 0 0 6px #ffffff40,0 10px 30px #0008;animation:flip 1.2s ease-out}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(900deg) translateY(-40px)}100%{transform:rotateY(1800deg) translateY(0)}}
+@media(max-width:560px){.score{font-size:42px;white-space:nowrap}.board{padding:10px;gap:8px}.board .tn{font-size:16px}.dot{width:16px;height:16px;font-size:9px}.dots{gap:4px}}
+
+/* veto + presupuesto / subasta */
+.draft>*,.grid3>*{min-width:0}
+.grid2c{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:480px){.grid2c{grid-template-columns:1fr}}
+.pc .pr{position:absolute;right:12px;bottom:10px;text-align:right;font-family:var(--display);font-weight:900;font-size:28px;line-height:1;color:var(--ink);background:#f4c20d22;border:1px solid #f4c20d77;border-radius:10px;padding:4px 10px}
+.pc .pr small{display:block;font-size:10px;letter-spacing:.1em;color:var(--muted);font-family:var(--body);font-weight:700;text-transform:uppercase}
+.pc.veto{border-color:#a84747}
+button.pc.veto:hover:not([disabled]){border-color:var(--bad);background:#ff6b6b18}
+.vetotag{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--bad)}
+.bud{margin-bottom:8px}
+.bud .t{display:flex;justify-content:space-between;font-size:14px}
+.bud .t b{font-family:var(--display);font-size:22px;letter-spacing:.03em;text-transform:uppercase}
+.bud .timer i{transition:width .3s}
+.clue{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:7px 10px;border-radius:8px;background:var(--panel2);margin-bottom:6px;font-size:15px;min-height:36px;align-items:center}
+.clue .cl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.clue:not(.on){opacity:.45}
+.clue.on{animation:clueIn .5s ease-out}
+.clue.k-nivel.on .cv,.clue.k-nombre.on .cv{font-family:var(--display);font-size:26px;font-weight:900;color:var(--gold);line-height:1}
+@keyframes clueIn{from{background:#f4c20d55;transform:translateX(-6px)}to{background:var(--panel2);transform:none}}
+.bidrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 8px}
+.bidrow div{background:var(--panel2);border-radius:10px;padding:8px 10px}
+.bidrow small{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.bidrow b{font-family:var(--display);font-size:26px;letter-spacing:.02em}
+.bidrow b.me{color:var(--gold)}
+.bigt{font-family:var(--display);font-weight:900;font-size:40px;line-height:1}
+.ext{color:var(--good);font-weight:800;margin-left:8px}
+.sold{width:100%;border-collapse:collapse;font-size:12px}
+.sold th{text-align:left;color:var(--muted);font-weight:700;padding:3px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.sold td{padding:4px 6px;border-bottom:1px solid #ffffff12;white-space:nowrap}
+.sold .own0{border-left:3px solid var(--gold)}
+.sold .own1{border-left:3px solid #6f93ff}
+.scroll{overflow-x:auto}
+select{font:inherit;background:var(--panel2);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:8px;width:100%}
+.bigfi{font-family:var(--display);font-weight:900;font-size:40px;color:var(--gold);line-height:1}
+.notice{background:#3a2a00;border:1px solid var(--gold);color:var(--ink);padding:8px 12px;border-radius:10px;margin-bottom:10px;font-size:14px}
+.notice:empty{display:none}
+input.txt{font:inherit;background:var(--panel2);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+@media(prefers-reduced-motion:reduce){.coin{animation:none}#ball,#keeper{transition:none}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>window.ONLINE_ENABLED=true;</script>
+<script>/* Tanda de penales — motor del juego (puro, sin DOM, determinista con semilla). */
+(function (root) {
+'use strict';
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const logit = p => Math.log(p / (1 - p));
+const sig = x => 1 / (1 + Math.exp(-x));
+const shrink = (g, n, prior, k) => (g + prior * k) / (n + k);
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const pick = (rng, arr) => arr[Math.floor(rng() * arr.length)];
+function shuffle(rng, arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+const SIDES = ['L', 'C', 'R'];
+const TYPES = ['normal', 'fuerte', 'picada'];
+
+/* ---------- 1) FÍSICA DEL PENAL (coordenadas en metros) ----------
+   Arco 7,32 x 2,44. x: -3,66 (izq) a 3,66 (der). y: 0 (piso) a 2,44 (travesaño).
+   El pateador elige un punto de puntería. La pelota cae en ese punto + un error gaussiano
+   (el "diámetro" de incertidumbre) que depende del tipo de remate y del jugador.
+   Después se clasifica: palo / travesaño / afuera / adentro. Si está adentro, el arquero
+   la ataja según su alcance (elipse alrededor de su zona de tiro). */
+const GW = 3.66, GH = 2.44, TOL = .08, PX = 480 / 7.32;
+const KICK = {
+  normal: { sx: .375, sy: .375, pm: .04 },
+  fuerte: { sx: .65, sy: .65, pm: .065 },
+  picada: { sx: .50, sy: .69, pm: .38 },
+};
+const MISHIT = 2.6;
+const PHYS = { rxS: 1.5, rxD: 2.0, ryM: 1.5, ryE: 1.35, s0n: .90, s0f: .72, s0ps: 4, s0pd: .50 }; // alcance y fuerza del arquero (calibrado)
+const MORALE = { goal: .35, miss: -.12 };
+/* Zonas del arquero (3x3): idx = fila*3 + columna. Fila 0 = abajo. Columna 0 = izquierda */
+const DX = [-2.3, 0, 2.3], DY = [.55, 1.2, 1.85];
+const DIVES = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) DIVES.push({ i: r * 3 + c, c, r, x: DX[c], y: DY[r] });
+/* Zonas de puntería en el modo 9 zonas */
+const ZX = [-2.85, 0, 2.85], ZY = [.5, 1.2, 1.95];
+const ZONES = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ZONES.push({ i: r * 3 + c, c, r, x: ZX[c], y: ZY[r] });
+const physOf = x => x < -1.22 ? 'L' : x > 1.22 ? 'R' : 'C';
+const clampAim = (x, y) => ({ x: clamp(x, -GW - .1, GW + .1), y: clamp(y, .05, GH + .1) });
+
+/* Muestras fijas de ruido (determinista, cobertura pareja del plano) */
+const NS = (() => { const n = 120, out = []; for (let i = 0; i < n; i++) { const u = (i + .5) / n, r = Math.sqrt(-2 * Math.log(1 - u)), th = 2 * Math.PI * ((i * 0.6180339887) % 1); out.push([r * Math.cos(th), r * Math.sin(th)]); } return out; })();
+
+function classify(x, y) {
+  y = Math.abs(y); const ax = Math.abs(x);
+  if (ax > GW + TOL || y > GH + TOL) return 'wide';
+  if (Math.abs(ax - GW) <= TOL) return 'post';
+  if (Math.abs(y - GH) <= TOL) return 'bar';
+  return 'in';
+}
+/* Parámetros de arquero para una zona de tiro y un tipo de remate */
+function keeperParams(d, type, m) {
+  const stay = Math.abs(d.x) < 1;
+  const reach = Math.exp(.18 * m.bg);
+  const Rx = (stay ? PHYS.rxS : PHYS.rxD) * reach, Ry = (d.r === 1 ? PHYS.ryM : PHYS.ryE) * reach;
+  let s0 = type === 'normal' ? PHYS.s0n : type === 'fuerte' ? PHYS.s0f : (stay ? PHYS.s0ps : PHYS.s0pd);
+  s0 = clamp(s0 * (1 + .08 * m.bg), .05, 2.2);
+  return { kx: d.x, ky: d.y, Rx, Ry, s0 };
+}
+function savep(x, y, kv) {
+  const dx = (x - kv.kx) / kv.Rx, dy = (y - kv.ky) / kv.Ry, d2 = dx * dx + dy * dy;
+  return d2 >= 1 ? 0 : clamp(kv.s0 * (1 - d2), 0, 1);
+}
+function kickParams(type, m) {
+  const b = KICK[type], f = Math.exp(-.35 * m.bk);
+  return { sx: b.sx * f, sy: b.sy * f, pm: clamp(b.pm * Math.exp(-.45 * m.bk), .004, .5) };
+}
+/* Probabilidades (por cuadratura) de un punto de puntería + tipo contra una zona del arquero */
+function cellStats(aim, type, g, kv) {
+  const acc = { goal: 0, save: 0, post: 0, bar: 0, wide: 0 };
+  for (const sc of [1, MISHIT]) {
+    const w = sc === 1 ? 1 - g.pm : g.pm, scx = type === 'picada' && sc !== 1 ? 1.3 : sc;
+    let goal = 0, save = 0, post = 0, bar = 0, wide = 0;
+    for (let i = 0; i < NS.length; i++) {
+      const x = aim.x + NS[i][0] * g.sx * scx, y = aim.y + NS[i][1] * g.sy * sc;
+      const c = classify(x, y);
+      if (c === 'in') { const sp = savep(x, Math.abs(y), kv); save += sp; goal += 1 - sp; }
+      else if (c === 'post') post++; else if (c === 'bar') bar++; else wide++;
+    }
+    const n = NS.length; acc.goal += w * goal / n; acc.save += w * save / n; acc.post += w * post / n; acc.bar += w * bar / n; acc.wide += w * wide / n;
+  }
+  acc.miss = acc.post + acc.bar + acc.wide; return acc;
+}
+
+/* ---------- 2) STATS, JERARQUÍA Y PERKS ---------- */
+function dataSide(player, phys) {
+  if (phys === 'C') return 'M';
+  const zurdo = player.pierna === 'I';
+  if (phys === 'R') return zurdo ? 'P2' : 'P1';
+  return zurdo ? 'P1' : 'P2';
+}
+function physSide(player, d) {
+  if (d === 'M') return 'C';
+  const zurdo = player.pierna === 'I';
+  if (d === 'P1') return zurdo ? 'L' : 'R';
+  return zurdo ? 'R' : 'L';
+}
+let GS = { P1: .78, P2: .77, M: .64 };
+let GKS = { P1: .20, P2: .25, M: .33 };
+function calibrate(players) {
+  const k = { P1: [0, 0], P2: [0, 0], M: [0, 0] }, a = { P1: [0, 0], P2: [0, 0], M: [0, 0] };
+  for (const p of players) {
+    if (p.k) for (const s in k) { k[s][0] += p.k.s[s][0]; k[s][1] += p.k.s[s][1]; }
+    if (p.a) for (const s in a) { a[s][0] += p.a.ks[s][0]; a[s][1] += p.a.ks[s][1]; }
+  }
+  for (const s in k) if (k[s][0] >= 20) GS[s] = k[s][1] / k[s][0];
+  for (const s in a) if (a[s][0] >= 20) GKS[s] = a[s][1] / a[s][0];
+  return { GS: { ...GS }, GKS: { ...GKS } };
+}
+const PEN_BASE = .82; // conversión asumida de penales de partido (la base solo tiene los convertidos, no los errados)
+const keeperStop = A => shrink(A.sv, Math.max(0, A.n - A.afuera), .33, 8);
+/* Efectividad: tandas + penales convertidos en partidos oficiales (sin errados cargados, se asume la media) */
+function kickerRate(p) {
+  const K = p.k || { n: 0, g: 0 }, pen = p.pen || 0;
+  return shrink(K.g + pen, K.n + pen / PEN_BASE, .75, 6);
+}
+const H = p => p.h == null ? .5 : p.h;
+/* Series definidas: se netean aciertos y errores. Queda un solo perk y, si hubo de los dos, pesa un poco menos */
+function clutch(K) {
+  if (!K) return null; const dw = K.dw || 0, mw = K.mw || 0;
+  if (dw >= mw && dw > 0) return { kind: 'pos', w: dw - .5 * mw };
+  if (mw > dw) return { kind: 'neg', w: mw - .5 * dw };
+  return null;
+}
+function topSide(K) {
+  let best = null; for (const s of ['P1', 'P2', 'M']) { const [n, g] = K.s[s]; if (n >= 4 && g / n >= .8 && (!best || g / n > best.r)) best = { s, r: g / n, n }; } return best;
+}
+function perksOf(p) {
+  const out = [], K = p.k, A = p.a, h = H(p);
+  if (K) {
+    const cl = clutch(K);
+    if (cl && cl.kind === 'pos') out.push({ id: 'definidor', label: cl.w >= 4 ? 'Definidor de finales' : 'Definidor', tone: 'pos', desc: `Definió series convirtiendo (peso neto ${cl.w.toFixed(1)}: una final internacional vale mucho más que un cuarto de copa).${K.mw > 0 ? ' Erró alguna, y eso le resta un poco.' : ''}` });
+    if (cl && cl.kind === 'neg') out.push({ id: 'seachica', label: 'Se achica', tone: 'neg', desc: `Erró penales que definían series (peso neto ${cl.w.toFixed(1)}): baja su chance en penales decisivos.` });
+    const net = K.abre[1] - (K.abre[0] - K.abre[1]);
+    if (net > 0) out.push({ id: 'abridor', label: 'Abridor', tone: 'pos', desc: 'Abrió una tanda y convirtió: bonus si patea el primer penal.' });
+    if (net < 0) out.push({ id: 'malabridor', label: 'Mal abridor', tone: 'neg', desc: 'Abrió una tanda y erró: penalización si patea el primer penal.' });
+    if (K.n >= 4 && K.g / K.n >= .82) out.push({ id: 'frio', label: 'Sangre fría', tone: 'pos', desc: 'Efectividad altísima en tandas reales.' });
+    if (K.tandas >= 4) out.push({ id: 'veterano', label: 'Veterano de tandas', tone: 'pos', desc: 'Jugó 4 o más tandas: se mantiene sereno en los penales decisivos.' });
+    if (K.out >= 2 && K.out / K.n >= .2) out.push({ id: 'afuera', label: 'Se le va afuera', tone: 'neg', desc: 'Tiene antecedentes de mandarla afuera: su puntería es menos precisa.' });
+    if (topSide(K)) out.push({ id: 'rinconero', label: 'Rinconero', tone: 'pos', desc: 'Convierte más del 80% hacia su zona favorita: más preciso cuando apunta ahí.' });
+  }
+  if ((p.pen || 0) >= 5) out.push({ id: 'penalista', label: (p.pen >= 15 ? 'Penalista histórico' : 'Penalista'), tone: 'pos', desc: `Convirtió ${p.pen} penales en partidos.` });
+  if (!p.gk && h >= .9 && (p.pj || 0) >= 150) out.push({ id: 'referente', label: 'Referente', tone: 'pos', desc: 'Ídolo con gran jerarquía histórica: se agranda en los momentos clave.' });
+  if (A) {
+    if (A.n >= 8 && A.sv / Math.max(1, A.n - A.afuera) >= .35) out.push({ id: 'ataja', label: 'Atajapenales', tone: 'pos', desc: 'Ataja bastante más que el promedio.' });
+    if (A.dw > 0) out.push({ id: 'heroe', label: 'Héroe de tandas', tone: 'pos', desc: `Definió series con una atajada (peso ${A.dw.toFixed(1)}): incomoda al pateador en penales decisivos.` });
+    if (A.adiv && A.adiv[0] >= 10 && A.adiv[1] / A.adiv[0] >= .55) out.push({ id: 'olfato', label: 'Olfato', tone: 'pos', desc: 'Adivina el lado en más de la mitad de los penales: llega un poco más lejos.' });
+  }
+  if (p.gk && h >= .9) out.push({ id: 'referente', label: 'Referente', tone: 'pos', desc: 'Arquero de gran jerarquía histórica: pesa en los momentos clave.' });
+  return out;
+}
+/* Nivel de penal 30-99 */
+function ovr(p) {
+  let v;
+  if (p.gk) {
+    const A = p.a; v = A ? 40 + (keeperStop(A) - .2) * 200 : 55;
+    v += (H(p) - .5) * 30; if (A && A.dw > 0) v += Math.min(10, 2 * A.dw);
+  } else {
+    v = 40 + (kickerRate(p) - .55) * 130 + (H(p) - .5) * 30;
+    const cl = clutch(p.k); if (cl && cl.kind === 'pos') v += Math.min(12, 1.5 * cl.w); if (cl && cl.kind === 'neg') v -= Math.min(10, 2 + 1.5 * cl.w);
+    if ((p.pen || 0) >= 5) v += 3;
+    for (const pk of perksOf(p)) if (!['definidor', 'seachica', 'penalista'].includes(pk.id)) v += pk.tone === 'pos' ? 2 : -3;
+  }
+  return Math.round(clamp(v, 30, 99));
+}
+
+/* ---------- 3) MODIFICADORES (log-odds: + favorece a su dueño) ----------
+   bk (pateador) achica el círculo de error; bg (arquero) agranda su alcance. */
+/* ctx: { decisive, first, morale, gkKick, streak, hot } */
+function modifiers(kicker, keeper, aimSide, ctx) {
+  const parts = [];
+  const add = (v, l, who) => { if (Math.abs(v) > 1e-9) parts.push({ v, l, who }); };
+  const K = kicker.k, A = keeper.a, sd = dataSide(kicker, aimSide), hk = H(kicker), hg = H(keeper);
+  add(clamp(2.2 * (kickerRate(kicker) - .75), -.45, .45), 'Trayectoria como pateador (tandas y penales de partido)', 'k');
+  if (!K && !(kicker.pen > 0)) add(-.15, 'Sin antecedentes como pateador', 'k');
+  add(.5 * (hk - .5), 'Jerarquía histórica', 'k');
+  if (kicker.pen >= 15) add(.2, 'Penalista histórico', 'k'); else if (kicker.pen >= 5) add(.1, 'Penalista', 'k');
+  if (K && sd) { const s = K.s[sd]; add(clamp(1.0 * (shrink(s[1], s[0], GS[sd], 4) - GS[sd]), -.25, .25), 'Historial por zona', 'k'); const ts = topSide(K); if (ts && ts.s === sd) add(.2, 'Rinconero', 'k'); }
+  if (K && K.out >= 2 && K.out / K.n >= .2) add(-.2, 'Se le va afuera', 'k');
+  if (ctx.gkKick && !K) add(-.2, 'Arquero pateando', 'k');
+  if (A) {
+    add(clamp(1.8 * (keeperStop(A) - .33), -.4, .4), 'Trayectoria del arquero', 'g');
+    if (sd) { const s = A.ks[sd]; add(clamp(1.0 * (shrink(s[1], s[0], GKS[sd], 5) - GKS[sd]), -.25, .25), 'Historial del arquero en esa zona', 'g'); }
+    if (A.adiv && A.adiv[0] >= 10 && A.adiv[1] / A.adiv[0] >= .55) add(.12, 'Olfato', 'g');
+  }
+  add(.35 * (hg - .5), 'Jerarquía del arquero', 'g');
+  if (ctx.decisive) {
+    if (hk > .5) add(.45 * (hk - .5) * 2, 'Referente en momentos clave', 'k');
+    const cl = clutch(K);
+    if (cl && cl.kind === 'pos') add(clamp(.12 + .09 * cl.w, 0, .8), 'Definidor (saldo de series definidas)', 'k');
+    if (cl && cl.kind === 'neg') add(-clamp(.08 + .05 * cl.w, 0, .5), 'Se achica (saldo de series definidas)', 'k');
+    if (K && K.tandas >= 4) add(.12, 'Veterano de tandas', 'k');
+    if (A && A.dw > 0) add(clamp(.1 + .08 * A.dw, 0, .6), 'Héroe de tandas (arquero)', 'g');
+    if (hg > .5) add(.3 * (hg - .5) * 2, 'Arquero referente en momentos clave', 'g');
+  }
+  if (ctx.first && K) { const net = K.abre[1] - (K.abre[0] - K.abre[1]); if (net > 0) add(.25, 'Abridor', 'k'); else if (net < 0) add(-.25, 'Mal abridor', 'k'); }
+  if (ctx.streak > 0) add(Math.min(.2, .06 * ctx.streak), 'Racha de goles del equipo', 'k');
+  if (ctx.morale) add(ctx.morale, ctx.morale > 0 ? 'Moral alta' : 'Moral golpeada', 'k');
+  if (ctx.hot) add(.12, 'Arquero crecido tras atajar', 'g');
+  const sum = w => clamp(parts.filter(x => x.who === w).reduce((s, x) => s + x.v, 0), -1.2, 1.2);
+  return { bk: sum('k'), bg: sum('g'), parts };
+}
+function resolveKick(rng, kicker, keeper, kick, diveIdx, ctx) {
+  const side = physOf(kick.x), m = modifiers(kicker, keeper, side, ctx);
+  const g = kickParams(kick.type, m), kv = keeperParams(DIVES[diveIdx], kick.type, m);
+  const mis = rng() < g.pm, sc = mis ? MISHIT : 1;
+  const u1 = Math.max(1e-9, rng()), u2 = rng(), r = Math.sqrt(-2 * Math.log(u1));
+  const scx = kick.type === 'picada' && mis ? 1.3 : sc;
+  const x = kick.x + r * Math.cos(2 * Math.PI * u2) * g.sx * scx, y = Math.abs(kick.y + r * Math.sin(2 * Math.PI * u2) * g.sy * sc);
+  const cls = classify(x, y); let result = cls, sp = 0;
+  if (cls === 'in') { sp = savep(x, y, kv); result = rng() < sp ? 'save' : 'goal'; }
+  const st = cellStats(kick, kick.type, g, kv);
+  const guess = Math.hypot(x - kv.kx, Math.abs(y) - kv.ky) < 1.2 && cls === 'in';
+  return { result, land: { x, y }, guess, mishit: mis, sp, p: { ...st, parts: m.parts, bk: m.bk, bg: m.bg }, kick, dive: diveIdx, sigma: { x: g.sx, y: g.sy } };
+}
+
+/* ---------- 4) TANDA ---------- */
+class Shootout {
+  /* teams[i] = { name, gk, order:[5 jugadores de campo] } · first = equipo que patea primero · opts.mode: 'libre' | 'zonas' */
+  constructor(teams, first, rng, opts = {}) {
+    this.t = teams; this.first = first; this.rng = rng; this.mode = opts.mode || 'libre';
+    this.sc = [0, 0]; this.kk = [0, 0]; this.gk = [0, 0]; this.sd = [0, 0];
+    this.phase = 'reg'; this.winner = null; this.morale = [0, 0]; this.streak = [0, 0]; this.hot = [0, 0]; this.log = []; this.n = 0;
+  }
+  _cnt(phase) { return phase === 'reg' ? this.kk : phase === 'gk' ? this.gk : this.sd; }
+  _state() { return { sc: this.sc.slice(), kk: this.kk.slice(), gk: this.gk.slice(), sd: this.sd.slice(), phase: this.phase }; }
+  static check(s) {
+    if (s.phase === 'reg') {
+      const r0 = 5 - s.kk[0], r1 = 5 - s.kk[1];
+      if (s.sc[0] > s.sc[1] + r1) return { w: 0 };
+      if (s.sc[1] > s.sc[0] + r0) return { w: 1 };
+      if (s.kk[0] === 5 && s.kk[1] === 5) return s.sc[0] === s.sc[1] ? { phase: 'gk' } : { w: s.sc[0] > s.sc[1] ? 0 : 1 };
+    } else if (s.phase === 'gk') {
+      if (s.gk[0] === 1 && s.gk[1] === 1) return s.sc[0] === s.sc[1] ? { phase: 'sd' } : { w: s.sc[0] > s.sc[1] ? 0 : 1 };
+    } else if (s.phase === 'sd') {
+      if (s.sd[0] === s.sd[1] && s.sd[0] > 0 && s.sc[0] !== s.sc[1]) return { w: s.sc[0] > s.sc[1] ? 0 : 1 };
+    }
+    return {};
+  }
+  _hyp(team, goal) {
+    const s = this._state(); const key = s.phase === 'reg' ? 'kk' : s.phase;
+    s[key][team]++; if (goal) s.sc[team]++;
+    const c = Shootout.check(s); return c.w !== undefined ? c.w : null;
+  }
+  peek() {
+    if (this.winner !== null) return null;
+    const cnt = this._cnt(this.phase), o = 1 - this.first;
+    const team = cnt[this.first] === cnt[o] ? this.first : o;
+    const T = this.t[team], O = this.t[1 - team];
+    const kicker = this.phase === 'reg' ? T.order[this.kk[team]] : this.phase === 'gk' ? T.gk : T.order[this.sd[team] % 5];
+    const winOnGoal = this._hyp(team, true) === team, loseOnMiss = this._hyp(team, false) === 1 - team;
+    const secondOfPair = this.phase !== 'reg' && cnt[team] < cnt[1 - team];
+    return {
+      team, kicker, keeper: O.gk, phase: this.phase, no: this.n + 1,
+      round: (this.phase === 'reg' ? this.kk[team] : this.phase === 'sd' ? this.sd[team] : 0) + 1,
+      winOnGoal, loseOnMiss, decisive: secondOfPair || winOnGoal || loseOnMiss,
+      first: this.n === 0, morale: this.morale[team], gkKick: this.phase === 'gk', streak: this.streak[team], hot: this.hot[1 - team],
+    };
+  }
+  ctxOf(pk) { return { decisive: pk.decisive, first: pk.first, morale: pk.morale, gkKick: pk.gkKick, streak: pk.streak, hot: pk.hot }; }
+  /* kick = {x, y, type} (en modo zonas el punto se ajusta al centro de la zona) · dive = índice 0..8 */
+  play(pk, kick, dive) {
+    if (this.mode === 'zonas') { let b = ZONES[0], bd = 1e9; for (const z of ZONES) { const d = Math.hypot(z.x - kick.x, z.y - kick.y); if (d < bd) { bd = d; b = z; } } kick = { x: b.x, y: b.y, type: kick.type }; }
+    else { const c = clampAim(kick.x, kick.y); kick = { x: c.x, y: c.y, type: kick.type }; }
+    const out = resolveKick(this.rng, pk.kicker, pk.keeper, kick, dive, this.ctxOf(pk));
+    const goal = out.result === 'goal';
+    const key = this.phase === 'reg' ? 'kk' : this.phase;
+    this[key][pk.team]++; if (goal) this.sc[pk.team]++; this.n++;
+    this.morale[pk.team] = kick.type === 'picada' ? (goal ? MORALE.goal : MORALE.miss) : 0;
+    this.streak[pk.team] = goal ? this.streak[pk.team] + 1 : 0;
+    this.hot[1 - pk.team] = out.result === 'save' ? 1 : 0;
+    const rec = { ...out, pk, scoreAfter: this.sc.slice() };
+    this.log.push(rec);
+    const c = Shootout.check(this._state());
+    if (c.w !== undefined) this.winner = c.w; else if (c.phase) this.phase = c.phase;
+    rec.phaseAfter = this.phase; rec.winner = this.winner;
+    return rec;
+  }
+}
+
+/* ---------- 5) IA (equilibrio mixto por regret matching) ---------- */
+const XS = [-3.3, -2.6, -1.4, 0, 1.4, 2.6, 3.3], YS = [.4, 1.2, 2.05];
+function options(mode) {
+  const out = [];
+  if (mode === 'zonas') for (const t of TYPES) for (const z of ZONES) out.push({ x: z.x, y: z.y, type: t });
+  else for (const t of TYPES) for (const y of YS) for (const x of XS) out.push({ x, y, type: t });
+  return out;
+}
+const OPT = { libre: options('libre'), zonas: options('zonas') };
+function payoffMatrix(sh, pk) {
+  const ctx = sh.ctxOf(pk), opts = OPT[sh.mode], mc = {};
+  const modsFor = side => mc[side] || (mc[side] = modifiers(pk.kicker, pk.keeper, side, ctx));
+  return opts.map(o => {
+    const m = modsFor(physOf(o.x)), g = kickParams(o.type, m);
+    return DIVES.map(d => {
+      const st = cellStats(o, o.type, g, keeperParams(d, o.type, m));
+      return st.goal + (o.type === 'picada' ? st.goal * .03 - (1 - st.goal) * .01 : 0);
+    });
+  });
+}
+function solve(M, iters = 400) {
+  const R = M.length, C = M[0].length;
+  const rr = new Array(R).fill(0), rc = new Array(C).fill(0), sr = new Array(R).fill(0), sc = new Array(C).fill(0);
+  const norm = reg => { let s = 0; const pos = reg.map(x => { const v = x > 0 ? x : 0; s += v; return v; }); return s > 0 ? pos.map(x => x / s) : reg.map(() => 1 / reg.length); };
+  for (let t = 0; t < iters; t++) {
+    const p = norm(rr), q = norm(rc);
+    const up = M.map(row => { let s = 0; for (let j = 0; j < C; j++) s += row[j] * q[j]; return s; });
+    const uq = new Array(C).fill(0); for (let i = 0; i < R; i++) if (p[i] > 0) for (let j = 0; j < C; j++) uq[j] += M[i][j] * p[i];
+    let vp = 0, vq = 0; for (let i = 0; i < R; i++) vp += p[i] * up[i]; for (let j = 0; j < C; j++) vq += q[j] * uq[j];
+    for (let i = 0; i < R; i++) { rr[i] += up[i] - vp; sr[i] += p[i]; }
+    for (let j = 0; j < C; j++) { rc[j] += vq - uq[j]; sc[j] += q[j]; }
+  }
+  const ns = a => { const s = a.reduce((x, y) => x + y, 0); return a.map(x => x / s); };
+  const p = ns(sr), q = ns(sc);
+  let value = 0; for (let i = 0; i < R; i++) for (let j = 0; j < C; j++) value += p[i] * q[j] * M[i][j];
+  return { p, q, value };
+}
+const DIFF = { facil: .55, normal: .18, dificil: .03 };
+function sampleIdx(rng, w) { let r = rng(), a = 0; for (let i = 0; i < w.length; i++) { a += w[i]; if (r < a) return i; } return w.length - 1; }
+const _cache = { sh: null, n: -1, sol: null };
+function solved(sh, pk) { if (_cache.sh !== sh || _cache.n !== sh.n) { _cache.sh = sh; _cache.n = sh.n; _cache.sol = solve(payoffMatrix(sh, pk)); } return _cache.sol; }
+function aiKick(sh, pk, rng, diff = 'normal') {
+  const { p } = solved(sh, pk), e = DIFF[diff], opts = OPT[sh.mode];
+  // "estilo" de la IA: usa la picada con moderación (más natural), salvo en dificultad difícil
+  const taste = { normal: 1, fuerte: .85, picada: diff === 'dificil' ? .6 : .3 };
+  let tp = p.map((x, i) => x * taste[opts[i].type]); const ts = tp.reduce((a, b) => a + b, 0); tp = tp.map(x => x / ts);
+  const w = tp.map(x => (1 - e) * x + e / p.length), o = opts[sampleIdx(rng, w)];
+  const j = sh.mode === 'zonas' ? 0 : .12;
+  return { x: o.x + (rng() - .5) * 2 * j, y: o.y + (rng() - .5) * 2 * j, type: o.type };
+}
+function aiDive(sh, pk, rng, diff = 'normal') {
+  const { q } = solved(sh, pk), e = DIFF[diff];
+  return sampleIdx(rng, q.map(x => (1 - e) * x + e / q.length));
+}
+function aiOrder(field) {
+  const r = field.slice().sort((a, b) => ovr(b) - ovr(a));
+  return [r[0], r[2], r[3], r[4], r[1]];
+}
+
+/* ---------- 6) DRAFT ----------
+   Rondas (F = el que elige 1° al arrancar, S = el otro):
+   R1: F elige 1, S se lleva los 2 restantes · R2: F elige 1, S elige 1, el que sobra queda y se suman 2 nuevos
+   R3: S elige 1, F se lleva los 2 restantes · R4: S elige 1, F se lleva los 2 restantes · el último pasa a S.
+   Total 6 y 6. Nadie puede quedarse con los 2 arqueros: el motor conoce el mazo y bloquea las jugadas que lo fuerzan. */
+const STEPS = [{ k: 'rest', who: 'F' }, { k: 'one', first: 'F', second: 'S' }, { k: 'rest', who: 'S' }, { k: 'rest', who: 'S' }, { k: 'last', to: 'S' }];
+function cloneS(s) { return { deck: s.deck, dealt: s.dealt, vis: s.vis.slice(), teams: [s.teams[0].slice(), s.teams[1].slice()], F: s.F, S: s.S, step: s.step, sub: s.sub, entered: s.entered, log: s.log.slice(), byId: s.byId }; }
+function gkCount(s, t) { return s.teams[t].filter(id => s.byId[id].gk).length; }
+function advance(s) {
+  for (;;) {
+    if (s.step >= STEPS.length) return s;
+    const st = STEPS[s.step];
+    if (!s.entered) {
+      const need = Math.min(3 - s.vis.length, s.deck.length - s.dealt);
+      for (let i = 0; i < need; i++) s.vis.push(s.deck[s.dealt++]);
+      s.entered = true; s.log.push({ type: 'deal', ids: s.vis.slice() });
+    }
+    if (st.k === 'last') { const to = s[st.to]; s.teams[to].push(...s.vis); s.log.push({ type: 'auto', team: to, ids: s.vis.slice() }); s.vis = []; s.step++; s.entered = false; s.sub = 0; continue; }
+    return s;
+  }
+}
+function turn(s) {
+  if (s.step >= STEPS.length) return null;
+  const st = STEPS[s.step];
+  const team = st.k === 'rest' ? s[st.who] : (s.sub === 0 ? s[st.first] : s[st.second]);
+  return { team, step: s.step, sub: s.sub, options: s.vis.slice() };
+}
+function applyPick(s0, id) {
+  const s = cloneS(s0), st = STEPS[s.step], t = turn(s).team;
+  s.teams[t].push(id); s.vis = s.vis.filter(x => x !== id); s.log.push({ type: 'pick', team: t, id });
+  if (st.k === 'rest') {
+    const o = 1 - t; s.teams[o].push(...s.vis); s.log.push({ type: 'rest', team: o, ids: s.vis.slice() }); s.vis = []; s.step++; s.entered = false; s.sub = 0;
+  } else if (s.sub === 0) s.sub = 1;
+  else { s.step++; s.entered = false; s.sub = 0; }
+  return advance(s);
+}
+function valid(s) { return gkCount(s, 0) <= 1 && gkCount(s, 1) <= 1; }
+function feasible(s) {
+  if (!valid(s)) return false;
+  if (s.step >= STEPS.length) return gkCount(s, 0) === 1 && gkCount(s, 1) === 1 && s.teams[0].length === 6 && s.teams[1].length === 6;
+  return s.vis.some(id => feasible(applyPick(s, id)));
+}
+function legalPicks(s) { return s.vis.filter(id => feasible(applyPick(s, id))); }
+function newDraft(players, rng) {
+  const gks = players.filter(p => p.gk), fld = players.filter(p => !p.gk);
+  const g = shuffle(rng, gks).slice(0, 2), f = shuffle(rng, fld).slice(0, 10);
+  const deck = shuffle(rng, g.concat(f)); const byId = {}; deck.forEach(p => byId[p.id] = p);
+  return { deck: deck.map(p => p.id), dealt: 0, vis: [], teams: [[], []], F: 0, S: 1, step: 0, sub: 0, entered: false, log: [], byId };
+}
+function startDraft(s, F) { const c = cloneS(s); c.F = F; c.S = 1 - F; return advance(c); }
+
+
+/* ---------- 6b) DRAFT "VETO + PRESUPUESTO" ----------
+   Cada ronda muestra 4 cartas. El que NO elige primero veta 1 (la carta se va del juego; los arqueros son inmunes).
+   Después elige 1 el primero de la ronda y luego 1 el otro. La carta que sobra queda para la ronda siguiente, donde
+   los roles se invierten. 6 rondas = 6 jugadores por equipo. Cada jugador tiene un precio según su nivel y cada
+   equipo tiene un tope de fichas. Se necesita 1 ficha como mínimo por casillero libre. */
+const VT = { CAP: 32, SHOW: 4, DECK: 19, ROUNDS: 6, FIELD: 5 };
+function vtPrice(p) { return clamp(Math.round(1 + 14 * Math.pow(Math.max(0, ovr(p) - 35) / 64, 2)), 1, 15); }
+function vtClone(s) { return Object.assign({}, s, { vis: s.vis.slice(), teams: [s.teams[0].slice(), s.teams[1].slice()], spent: s.spent.slice(), vetoed: s.vetoed.slice(), log: s.log.slice() }); }
+function vtNew(players, rng, cap) {
+  const gks = players.filter(p => p.gk), fld = players.filter(p => !p.gk);
+  const g = shuffle(rng, gks).slice(0, 2), f = shuffle(rng, fld).slice(0, VT.DECK - 2);
+  const deck = shuffle(rng, g.concat(f));
+  // los dos arqueros tienen que salir en las primeras 3 rondas (10 cartas)
+  for (const gp of g) {
+    let i = deck.indexOf(gp);
+    if (i >= 10) { let j; do { j = Math.floor(rng() * 10); } while (deck[j].gk); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  }
+  const byId = {}, price = {}; deck.forEach(p => { byId[p.id] = p; price[p.id] = vtPrice(p); });
+  return { mode: 'veto', cap: cap || VT.CAP, deck: deck.map(p => p.id), dealt: 0, vis: [], teams: [[], []], spent: [0, 0], vetoed: [], F: 0, S: 1, round: 0, phase: 'veto', log: [], byId, price };
+}
+function vtDeal(s) {
+  if (s.round >= VT.ROUNDS) return s;
+  const need = Math.min(VT.SHOW - s.vis.length, s.deck.length - s.dealt);
+  for (let i = 0; i < need; i++) s.vis.push(s.deck[s.dealt++]);
+  s.log.push({ type: 'deal', round: s.round, ids: s.vis.slice() });
+  return s;
+}
+function vtStart(s0, F) { const s = vtClone(s0); s.F = F; s.S = 1 - F; s.round = 0; s.phase = 'veto'; return vtDeal(s); }
+function vtFirst(s) { return s.round % 2 === 0 ? s.F : s.S; }       // el que elige primero en la ronda
+function vtTurn(s) {
+  if (s.round >= VT.ROUNDS) return null;
+  const A = vtFirst(s), B = 1 - A;
+  return { team: s.phase === 'p1' ? A : B, phase: s.phase === 'veto' ? 'veto' : 'pick', sub: s.phase, round: s.round, first: A, options: s.vis.slice() };
+}
+const gkOf = (s, t) => s.teams[t].some(id => s.byId[id].gk);
+function vtRoleOk(s, t, id) { return s.byId[id].gk ? !gkOf(s, t) : s.teams[t].filter(x => !s.byId[x].gk).length < VT.FIELD; }
+function vtMax(s, t) { return s.cap - s.spent[t] - (5 - s.teams[t].length); }
+function vtLegal(s) {
+  const t = vtTurn(s); if (!t) return [];
+  if (t.phase === 'veto') return s.vis.filter(id => !s.byId[id].gk).map(id => ({ id, cost: 0 }));
+  const max = vtMax(s, t.team), ok = s.vis.filter(id => vtRoleOk(s, t.team, id));
+  const aff = ok.filter(id => s.price[id] <= max).map(id => ({ id, cost: s.price[id] }));
+  return aff.length ? aff : ok.map(id => ({ id, cost: Math.min(s.price[id], max) }));
+}
+function vtApply(s0, id) {
+  const s = vtClone(s0), t = vtTurn(s), L = vtLegal(s).find(o => o.id === id);
+  if (!L) throw new Error('jugada ilegal');
+  s.vis = s.vis.filter(x => x !== id);
+  if (t.phase === 'veto') { s.vetoed.push(id); s.log.push({ type: 'veto', team: t.team, id }); s.phase = 'p1'; return s; }
+  s.teams[t.team].push(id); s.spent[t.team] += L.cost; s.log.push({ type: 'pick', team: t.team, id, cost: L.cost });
+  if (s.phase === 'p1') s.phase = 'p2'; else { s.round++; s.phase = 'veto'; vtDeal(s); }
+  return s;
+}
+/* IA */
+function vtVal(s, t, id) {
+  if (!vtRoleOk(s, t, id)) return null;
+  const p = s.byId[id], slots = 6 - s.teams[t].length, c = Math.min(s.price[id], vtMax(s, t));
+  const per = (s.cap - s.spent[t]) / Math.max(1, slots), lam = 3.5 * clamp(5.7 / per, .6, 1.8);
+  let v = ovr(p) - lam * c;
+  if (p.gk) v += 1.5 * (6 - slots);
+  return v;
+}
+function vtAI(s, rng, diff) {
+  const t = vtTurn(s), me = t.team, ri = 1 - me, L = vtLegal(s);
+  const eps = { facil: .45, normal: .12, dificil: 0 }[diff] || 0;
+  if (L.length === 1 || rng() < eps) return pick(rng, L).id;
+  const best = (ids, team) => { let b = null, bv = -Infinity; for (const x of ids) { const v = vtVal(s, team, x); if (v !== null && v > bv) { bv = v; b = x; } } return b === null ? null : { id: b, v: bv }; };
+  if (t.phase === 'veto') {
+    let bid = null, bs = -Infinity;
+    for (const o of L) {
+      const rem = s.vis.filter(x => x !== o.id), a = best(rem, ri), rem2 = rem.filter(x => !a || x !== a.id), b = best(rem2, me);
+      const left = b ? rem2.filter(x => x !== b.id) : rem2, lv = left.length ? (vtVal(s, me, left[0]) || 0) : 0;
+      const sc = (b ? b.v : 0) - 0.7 * (a ? a.v : 0) + 0.25 * lv;
+      if (sc > bs) { bs = sc; bid = o.id; }
+    }
+    return bid;
+  }
+  let bid = null, bs = -Infinity;
+  for (const o of L) { const sv = vtVal(s, me, o.id), rv = vtVal(s, ri, o.id); const sc = sv + 0.3 * (rv === null ? 0 : rv); if (sc > bs) { bs = sc; bid = o.id; } }
+  return bid;
+}
+
+/* ---------- 6c) SUBASTA CIEGA CON PATRÓN ----------
+   12 lotes (2 arqueros + 10 de campo). Todos los de campo comparten un rasgo oculto (el patrón). Cada lote dura
+   LOT_SEC segundos y va soltando pistas. Gana la oferta más alta al terminar el tiempo (o cuando el rival se retira).
+   Una oferta en los últimos 3 s estira la subasta 5 s. Presupuesto: 100 fichas por equipo (el que patea primero parte con 95). */
+const AU = { SLOTS: 6, FIELD: 5, BUDGET: 100, FIRST_COST: 5, SNIPE: 3000, EXTEND: 5000, MAXEXT: 8, LOT_SEC: 60 };
+const THEMES = [
+  { id: 'inf', name: 'Surgidos de las inferiores', dim: 'org', test: p => p.org === 'Inferiores' },
+  { id: 'zur', name: 'Zurdos', dim: 'pierna', test: p => p.pierna === 'I' },
+  { id: 'ext', name: 'Nacidos fuera de la Argentina', dim: 'pais', test: p => !!p.pais && p.pais !== 'Argentina' },
+  { id: 'alt', name: 'Altos: 1,85 m o más', dim: 'alt', test: p => p.alt != null && p.alt >= 1.85 },
+  { id: 'baj', name: 'Bajos: 1,75 m o menos', dim: 'alt', test: p => p.alt != null && p.alt <= 1.75 },
+  { id: 'sel', name: 'Jugaron en una selección', dim: 'sel', test: p => !!p.sel },
+  { id: 'd80', name: 'Jugaron sobre todo en los años 80', dim: 'dec', test: p => p.dec === 1980 },
+  { id: 'd90', name: 'Jugaron sobre todo en los años 90', dim: 'dec', test: p => p.dec === 1990 },
+  { id: 'd00', name: 'Jugaron sobre todo en los 2000', dim: 'dec', test: p => p.dec === 2000 },
+  { id: 'd10', name: 'Jugaron sobre todo en los 2010', dim: 'dec', test: p => p.dec === 2010 },
+  { id: 'd20', name: 'Jugaron sobre todo en los 2020', dim: 'dec', test: p => p.dec === 2020 },
+];
+const AU_CLUES = [['pos', 0], ['dec', 0], ['tray', 12], ['nombre', 24], ['perks', 36], ['nivel', 48]];
+const AU_LBL = { pos: 'Puesto', dec: 'Época', org: 'Cuna', pais: 'Nació en', pierna: 'Pierna', alt: 'Altura', sel: 'Selección', tray: 'En Boca', tandas: 'En tandas', perks: 'Perks', nombre: 'Nombre', nivel: 'Nivel' };
+const POS_LBL = { ARQ: 'Arquero', DFC: 'Defensor central', DFI: 'Lateral izquierdo', DFD: 'Lateral derecho', LI: 'Lateral izquierdo', LD: 'Lateral derecho', MC: 'Volante central', MCD: 'Volante defensivo', MCO: 'Volante ofensivo', MI: 'Volante izquierdo', MD: 'Volante derecho', ENG: 'Enganche', ED: 'Extremo derecho', EI: 'Extremo izquierdo', EXT: 'Extremo', DC: 'Delantero', SD: 'Segundo delantero' };
+const decTxt = d => d === 1980 ? 'Años 80' : d === 1990 ? 'Años 90' : d === 2000 ? 'Años 2000' : d === 2010 ? 'Años 2010' : d === 2020 ? 'Años 2020' : 'Décadas del ' + d;
+function auThemesFor(players) {
+  return THEMES.filter(t => players.filter(p => !p.gk && t.test(p)).length >= 10);
+}
+function auClueText(p, k) {
+  switch (k) {
+    case 'pos': return p.gk ? 'Arquero' : (POS_LBL[p.pos] || p.pos);
+    case 'dec': return decTxt(p.dec) + ' (debutó en ' + p.deb + ')';
+    case 'org': return p.org === 'Inferiores' ? 'Surgido de las inferiores' : 'Llegó desde ' + p.org;
+    case 'pais': return p.pais ? 'Nació en ' + p.pais : 'Sin dato de nacimiento';
+    case 'pierna': return p.pierna === 'I' ? 'Zurdo' : p.pierna === 'D' ? 'Derecho' : 'Sin dato de pierna';
+    case 'alt': return p.alt ? p.alt.toFixed(2).replace('.', ',') + ' m' : 'Sin dato de altura';
+    case 'sel': return p.sel ? 'Jugó en su selección' : 'Nunca jugó en su selección';
+    case 'tray': return p.pj + ' partidos' + (p.gk ? '' : ', ' + p.gol + ' goles') + ' · ' + p.deb + '–' + (p.ult >= 2026 ? 'hoy' : p.ult);
+    case 'tandas': return p.gk ? (p.a && p.a.n ? 'Enfrentó ' + p.a.n + ' penales en tandas y atajó ' + p.a.sv : 'Sin tandas registradas') : (p.k && p.k.n ? 'Pateó ' + p.k.n + ' en tandas y convirtió ' + p.k.g : 'Sin penales en tandas registrados');
+    case 'perks': { const ps = perksOf(p); return ps.length ? ps.map(x => x.label).join(' · ') : 'Sin perks'; }
+    case 'nombre': return p.nombre;
+    case 'nivel': return String(ovr(p));
+  }
+}
+function auClues(A, id, tSec) {
+  const p = A.byId[id], skip = A.wild[id] ? null : A.theme.dim, sc = A.lotSec / 60;
+  return AU_CLUES.filter(([k]) => k !== skip).map(([k, at]) => { const a = at * sc, shown = tSec >= a; return { k, label: AU_LBL[k], at: a, shown, text: shown ? auClueText(p, k) : null }; });
+}
+const auFairC = n => 1 + 14 * Math.pow(Math.max(0, n - 35) / 64, 2);
+function auNew(players, rng, o = {}) {
+  const themes = auThemesFor(players), th = (o.themeId && themes.find(t => t.id === o.themeId)) || pick(rng, themes);
+  const fm = players.filter(p => !p.gk && th.test(p)), gm = players.filter(p => p.gk && th.test(p));
+  const f = shuffle(rng, fm).slice(0, 10);
+  const wildGK = gm.length < 2, g = shuffle(rng, wildGK ? players.filter(p => p.gk) : gm).slice(0, 2);
+  const lots = shuffle(rng, f.concat(g)), byId = {}, wild = {};
+  lots.forEach(p => { byId[p.id] = p; wild[p.id] = p.gk && wildGK; });
+  const raw = lots.map(p => auFairC(ovr(p))), sc = (2 * AU.BUDGET) / raw.reduce((a, b) => a + b, 0), fair = {};
+  lots.forEach((p, i) => fair[p.id] = raw[i] * sc);
+  return { mode: 'subasta', theme: th, wildGK, lots: lots.map(p => p.id), byId, wild, fair, mu: 2 * AU.BUDGET / 12, rng, lotSec: o.lotSec || AU.LOT_SEC,
+    teams: [[], []], budget: [AU.BUDGET, AU.BUDGET], S: 0, F: 1, lot: -1, cur: null, over: false, log: [] };
+}
+function auStart(A, firstKicker) { A.S = firstKicker; A.F = 1 - firstKicker; A.budget[firstKicker] -= AU.FIRST_COST; return A; }
+function auElig(A, t, id) { return A.byId[id].gk ? !A.teams[t].some(x => A.byId[x].gk) : A.teams[t].filter(x => !A.byId[x].gk).length < AU.FIELD; }
+const auMax = (A, t) => A.budget[t] - (AU.SLOTS - 1 - A.teams[t].length);
+function auSell(A, t, id, price, extra) { A.teams[t].push(id); A.budget[t] -= price; const ev = Object.assign({ type: 'sold', team: t, id, price, fair: A.fair[id] }, extra || {}); A.log.push(ev); return ev; }
+/* arranca el siguiente lote. Si un solo equipo puede recibirlo, se lo lleva directo por 1 ficha. */
+function auNext(A, now) {
+  const evs = [];
+  for (;;) {
+    A.lot++;
+    if (A.lot >= A.lots.length) { A.over = true; A.cur = null; return evs; }
+    const id = A.lots[A.lot], el = [0, 1].filter(t => auElig(A, t, id));
+    if (el.length === 1) { evs.push(auSell(A, el[0], id, Math.min(1, auMax(A, el[0])), { auto: true })); continue; }
+    A.cur = { id, start: now, end: now + A.lotSec * 1000, bid: 0, leader: null, done: [false, false], ext: 0, closed: null, bids: [] };
+    evs.push({ type: 'lot', lot: A.lot, id }); return evs;
+  }
+}
+function auBid(A, t, amount, now) {
+  const c = A.cur; if (!c || c.closed) return { ok: false, why: 'cerrada' };
+  amount = Math.floor(amount);
+  if (c.leader === t) return { ok: false, why: 'ya lideras' };
+  if (amount <= c.bid || amount < 1) return { ok: false, why: 'baja' };
+  if (amount > auMax(A, t)) return { ok: false, why: 'presupuesto' };
+  c.bid = amount; c.leader = t; c.done[t] = true; c.done[1 - t] = false; c.bids.push({ t, amount, at: now });
+  let extended = false;
+  if (c.end - now <= AU.SNIPE && c.ext < AU.MAXEXT) { c.end += AU.EXTEND; c.ext++; extended = true; }
+  return { ok: true, extended };
+}
+/* darse de baja: si nadie ofertó, el rival se lleva el lote por 1 ficha y se cierra ya */
+function auDrop(A, t) {
+  const c = A.cur; if (!c || c.closed) return;
+  if (c.leader === null) { c.leader = 1 - t; c.bid = 1; c.bids.push({ t: 1 - t, amount: 1, at: 0 }); }
+  c.done[0] = c.done[1] = true;
+}
+function auPass(A, t) { if (A.cur && !A.cur.closed) A.cur.done[t] = true; }
+function auTick(A, now) {
+  const c = A.cur; if (!c || c.closed) return [];
+  if (!(now >= c.end || (c.done[0] && c.done[1]))) return [];
+  let ev;
+  if (c.leader === null) { const w = A.rng() < .5 ? 0 : 1; ev = auSell(A, w, c.id, Math.min(1, auMax(A, w)), { nobids: true }); }
+  else ev = auSell(A, c.leader, c.id, c.bid, { timeout: now >= c.end });
+  c.closed = ev; return [ev];
+}
+/* IA subastadora (sirve para cualquiera de los dos equipos) */
+const AU_AI = {
+  facil:   { noise: .28, rmax: .70, tfull: 60, react: [1.6, 4.0], snipe: .10, aggr: 1.12, tmin: [24, 46] },
+  normal:  { noise: .12, rmax: .92, tfull: 46, react: [.8, 2.4],  snipe: .30, aggr: 1.32, tmin: [20, 38] },
+  dificil: { noise: .05, rmax: 1.0, tfull: 38, react: [.5, 1.4],  snipe: .45, aggr: 1.42, tmin: [18, 34] } };
+function auAIInit(A, rng, diff, me) {
+  const P = AU_AI[diff] || AU_AI.normal, sc = A.lotSec / 60, c = A.cur, r = (a, b) => a + rng() * (b - a);
+  return { P, me, noise: (rng() * 2 - 1) * P.noise * A.mu, tmin: r(P.tmin[0], P.tmin[1]) * sc * 1000, react: r(P.react[0], P.react[1]) * 1000,
+    nextAct: c.start + r(2, 14) * sc * 1000, seen: 0, snipe: rng() < P.snipe, rng };
+}
+function auAIMax(A, ai, now) {
+  const c = A.cur, P = ai.P, tSec = (now - c.start) / 1000 / (A.lotSec / 60), r = Math.min(P.rmax, .2 + .8 * tSec / P.tfull);
+  const est = A.mu + (A.fair[c.id] - A.mu) * r + ai.noise, slots = AU.SLOTS - A.teams[ai.me].length, per = A.budget[ai.me] / slots;
+  const mult = Math.pow(clamp(per / A.mu, .7, 2.4), .8);
+  return Math.min(Math.floor(est * mult * P.aggr), auMax(A, ai.me));
+}
+function auAIStep(A, ai, now) {
+  const c = A.cur; if (!c || c.closed || c.leader === ai.me) return null;
+  if (c.bid !== ai.seen) {
+    ai.seen = c.bid; ai.nextAct = now + ai.react * (.7 + ai.rng() * .6);
+    if (ai.snipe && c.bid > 0) ai.nextAct = Math.max(ai.nextAct, c.end - (2.2 + ai.rng() * 2) * 1000);
+  }
+  if (now < ai.nextAct) return null;
+  const max = auAIMax(A, ai, now), price = c.bid;
+  if (max >= price + 1) {
+    const amount = Math.min(max, price + 1 + Math.floor(ai.rng() * (1 + (max - price) * .15)));
+    ai.nextAct = now + 600; return { type: 'bid', amount };
+  }
+  if (now - c.start >= ai.tmin) return { type: 'pass' };
+  ai.nextAct = now + 600; return null;
+}
+/* ---------- 7) RELATO ---------- */
+function placeText(x, y) {
+  const ax = Math.abs(x), side = x < 0 ? 'izquierdo' : 'derecho';
+  if (ax > 2.5 && y > 1.7) return `al ángulo ${side}`;
+  if (ax > 2.5 && y < .8) return `pegada al palo ${side}, a ras del piso`;
+  if (ax > 2.5) return `junto al palo ${side}`;
+  if (ax < 1.0 && y > 1.7) return 'al medio, por arriba';
+  if (ax < 1.0 && y < .8) return 'al medio, bien abajo';
+  if (ax < 1.0) return 'al medio';
+  if (y > 1.7) return `arriba, hacia el lado ${side}`;
+  if (y < .8) return `abajo, hacia el lado ${side}`;
+  return `al lado ${side}`;
+}
+function narratePre(rng, pk) {
+  const K = pk.kicker.ap, G = pk.keeper.ap, L = [];
+  if (pk.phase === 'gk') L.push(`¡Insólito! Patean los arqueros. ${K} se hace cargo de la pelota ante ${G}.`, `Y se viene lo más raro de la noche: ${K}, el arquero, camina hacia el punto penal.`);
+  else if (pk.phase === 'sd') L.push(`Muerte súbita. Se juega todo en cada disparo. Va ${K}, enfrente ${G}.`, `Ya no hay margen. ${K} acomoda la pelota. ${G} se agranda bajo los tres palos.`);
+  else if (pk.first) L.push(`Arranca la tanda. ${K} acomoda la pelota en el punto penal y ${G} espera con los brazos abiertos.`, `Silencio en la Bombonera. Primer penal: ${K} contra ${G}.`);
+  else if (pk.winOnGoal) L.push(`¡Si convierte, se termina! ${K} tiene en sus pies la definición. ${G}, el último obstáculo.`, `Penal para ganarla. ${K} mira al arco, mira a ${G}... respira hondo.`);
+  else if (pk.loseOnMiss) L.push(`¡Está obligado! Si ${K} falla, se termina todo. ${G} lo espera.`, `Pelota al punto penal: ${K} no puede errar. El estadio contiene la respiración.`);
+  else L.push(`Va ${K}. Frente a él, ${G}.`, `Se prepara ${K}. ${G} camina sobre la línea.`, `Turno de ${K}. Acomoda, retrocede, mira al arquero.`);
+  if (pk.morale > 0) L.push(`Llega con la moral por las nubes después de la última picada.`);
+  if (pk.morale < 0) L.push(`Se nota el golpe de la picada fallada del compañero.`);
+  return pick(rng, L);
+}
+function narrateKick(rng, rec) {
+  const pk = rec.pk, K = pk.kicker.ap, G = pk.keeper.ap, { kick, result, land, dive } = rec;
+  const dv = DIVES[dive], dTxt = Math.abs(dv.x) < 1 ? `${G} se queda en el medio` : `${G} se tira ${dv.x < 0 ? 'a su izquierda' : 'a su derecha'}`;
+  const where = placeText(land.x, Math.abs(land.y)), aimed = placeText(kick.x, kick.y);
+  const run = kick.type === 'picada' ? pick(rng, [`${K} se anima a la picada ${aimed}`, `${K} frena la carrera y levanta la pelota con delicadeza ${aimed}`, `¡Panenka! ${K} se la juega con un toque suave ${aimed}`])
+    : kick.type === 'fuerte' ? pick(rng, [`${K} toma carrera y le pega con todo ${aimed}`, `${K} la patea con furia ${aimed}`, `Zapatazo de ${K} ${aimed}`])
+    : pick(rng, [`${K} define con calma ${aimed}`, `${K} la acomoda con el borde interno ${aimed}`, `${K} la coloca ${aimed}`]);
+  let out;
+  if (result === 'goal') {
+    if (kick.type === 'picada') out = pick(rng, [`¡GOOOL! ¡Qué personalidad! ${dTxt} y la pelota entra suave, descolgada.`, `¡Gol! La picada que enloquece a todos. ${dTxt}.`]);
+    else if (rec.guess) out = pick(rng, [`¡GOOOL! ${G} llegó a tocarla pero no alcanzó. ¡Está adentro!`, `¡Gol! ${G} casi la saca, pero tenía demasiada violencia.`, `¡Adentro! Rozó los guantes de ${G} y se metió.`]);
+    else out = pick(rng, [`¡GOOOL! ${dTxt}. No había nada que hacer.`, `¡Gol, gol, gol! ${dTxt} y la red se infla.`, `Adentro. ${dTxt}; el arquero la vio pasar.`]);
+  } else if (result === 'save') {
+    if (kick.type === 'picada') out = pick(rng, [`¡Y ${G} no se la cree! La picada terminó en sus manos. ¡Qué papelón!`, `¡Atajó ${G}! Se quedó esperando la picada y la abrazó.`]);
+    else out = pick(rng, [`¡ATAJÓ ${G}! ¡Tapó con la mano de abajo!`, `¡Se la sacó ${G}! ¡Adivinó y la desvió!`, `¡Qué atajada! ${G} se estira y la manda al córner. ¡Increíble!`]);
+  } else if (result === 'post') out = pick(rng, [`¡AL PALO! ¡Pegó en el palo y salió! ¡Increíble!`, `¡El palo! ¡Cuánta mala suerte! La pelota vuelve al campo.`]);
+  else if (result === 'bar') out = pick(rng, [`¡AL TRAVESAÑO! ¡Casi la rompe! Se va desviada.`, `¡Travesaño! La pelota pega arriba y se va... ¡afuera!`]);
+  else out = rec.mishit ? pick(rng, [`¡Le pegó mal! La pelota se fue muy lejos del arco.`, `¡Mal impacto! Se le escapó y se fue ${where.includes('arriba') ? 'por arriba' : 'afuera'}.`]) : pick(rng, [`¡Y la tiró afuera! La buscó demasiado cerca del palo.`, `¡Se fue desviada! Nadie lo puede creer.`, `¡Afuera! La pelota pasó lejos del palo.`]);
+  return `${run}. ${out}`;
+}
+function narrateEnd(rng, sh, names) {
+  const w = sh.winner, a = sh.sc[w], b = sh.sc[1 - w];
+  return pick(rng, [`¡Se terminó! ${names[w]} se queda con la tanda ${a} a ${b}.`, `¡Final! ${names[w]} gana ${a} a ${b} y lo festeja con todo.`]);
+}
+
+const Engine = { PHYS, SIDES, TYPES, DIVES, ZONES, GW, GH, PX, KICK, MORALE, mulberry32, shuffle, pick, clamp, shrink, calibrate, dataSide, physSide, physOf, perksOf, ovr, kickerRate, keeperStop,
+  modifiers, kickParams, keeperParams, savep, classify, cellStats, resolveKick, Shootout, payoffMatrix, solve, aiKick, aiDive, aiOrder, options, placeText,
+  newDraft, startDraft, turn, applyPick, legalPicks, feasible, AU, THEMES, auThemesFor, auClues, auNew, auStart, auElig, auMax, auNext, auBid, auPass, auDrop, auTick, auAIInit, auAIStep, auAIMax, VT, vtPrice, vtNew, vtStart, vtTurn, vtLegal, vtApply, vtAI, vtVal, vtFirst, narratePre, narrateKick, narrateEnd, get GS() { return GS; }, get GKS() { return GKS; } };
+if (typeof module !== 'undefined' && module.exports) module.exports = Engine; else root.Engine = Engine;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+const PLAYERS = [{"id":1678,"ap":"Marchesín","nombre":"Agustín Marchesín","pos":"ARQ","pierna":"D","h":0.429,"pj":53,"gol":0,"pen":0,"tit":0.0,"a":{"n":4,"sv":1,"afuera":1,"dive":{"P1":0,"P2":0,"M":0},"ks":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[0,0]},"gk":true,"org":"Lanús","alt":1.88,"pais":"Argentina","deb":2025,"ult":2026,"dec":2020,"sel":true,"fn":"Agustín"},{"id":1467,"ap":"Orión","nombre":"Agustín Orión","pos":"ARQ","pierna":"D","h":0.849,"pj":203,"gol":0,"pen":0,"tit":3.6,"k":{"n":2,"g":2,"s":{"P1":[0,0],"P2":[0,0],"M":[2,2]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.6,"mw":0.0,"out":0,"tandas":2},"a":{"n":30,"sv":8,"afuera":4,"dive":{"P1":5,"P2":20,"M":5},"ks":{"P1":[7,0],"P2":[10,3],"M":[9,5]},"define":1,"dw":1.6,"tandas":4,"adiv":[30,19]},"gk":true,"org":"San Lorenzo","alt":1.87,"pais":"Argentina","deb":2011,"ult":2016,"dec":2010,"sel":true,"fn":"Agustín"},{"id":1561,"ap":"Rossi","nombre":"Agustín Rossi","pos":"ARQ","pierna":"D","h":0.849,"pj":151,"gol":0,"pen":0,"tit":6.9,"a":{"n":29,"sv":6,"afuera":4,"dive":{"P1":11,"P2":16,"M":2},"ks":{"P1":[9,1],"P2":[11,4],"M":[5,1]},"define":0,"dw":0.0,"tandas":6,"adiv":[29,14]},"gk":true,"org":"Chacarita","alt":1.93,"pais":"Argentina","deb":2017,"ult":2023,"dec":2020,"sel":false,"fn":"Agustín"},{"id":1397,"ap":"Bobadilla","nombre":"Aldo Bobadilla","pos":"ARQ","pierna":"D","h":0.472,"pj":25,"gol":0,"pen":0,"tit":1.4,"a":{"n":4,"sv":0,"afuera":1,"dive":{"P1":1,"P2":3,"M":0},"ks":{"P1":[3,0],"P2":[0,0],"M":[0,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[4,0]},"gk":true,"org":"Cerro Porteño (Par)","alt":1.92,"pais":"Paraguay","deb":2006,"ult":2007,"dec":2000,"sel":true,"fn":"Aldo"},{"id":1114,"ap":"Navarro Montoya","nombre":"Carlos Navarro Montoya","pos":"ARQ","pierna":null,"h":0.953,"pj":400,"gol":0,"pen":0,"tit":7.2,"a":{"n":71,"sv":11,"afuera":8,"dive":{"P1":10,"P2":19,"M":7},"ks":{"P1":[10,2],"P2":[21,3],"M":[1,0]},"define":2,"dw":2.6,"tandas":13,"adiv":[36,20]},"gk":true,"org":"Vélez Sarsfield","alt":null,"pais":"Colombia","deb":1988,"ult":1996,"dec":1980,"sel":false,"fn":"Carlos"},{"id":1578,"ap":"Andrada","nombre":"Esteban Andrada","pos":"ARQ","pierna":"D","h":0.764,"pj":93,"gol":0,"pen":0,"tit":3.3,"a":{"n":21,"sv":1,"afuera":4,"dive":{"P1":9,"P2":9,"M":3},"ks":{"P1":[7,0],"P2":[8,1],"M":[2,0]},"define":0,"dw":0.0,"tandas":4,"adiv":[21,5]},"gk":true,"org":"Lanús","alt":1.94,"pais":"Argentina","deb":2018,"ult":2021,"dec":2010,"sel":false,"fn":"Esteban"},{"id":1530,"ap":"Sara","nombre":"Guillermo Sara","pos":"ARQ","pierna":"D","h":0.627,"pj":37,"gol":0,"pen":0,"tit":2.6,"a":{"n":4,"sv":2,"afuera":0,"dive":{"P1":0,"P2":3,"M":1},"ks":{"P1":[0,0],"P2":[2,2],"M":[2,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[4,3]},"gk":true,"org":"Atlético Rafaela","alt":1.84,"pais":"Argentina","deb":2015,"ult":2018,"dec":2010,"sel":false,"fn":"Guillermo"},{"id":914,"ap":"Gatti","nombre":"Hugo Gatti","pos":"ARQ","pierna":null,"h":0.976,"pj":417,"gol":0,"pen":0,"tit":12.3,"a":{"n":5,"sv":1,"afuera":0,"dive":{"P1":3,"P2":1,"M":1},"ks":{"P1":[1,0],"P2":[3,0],"M":[1,1]},"define":1,"dw":3.9600000000000004,"tandas":1,"adiv":[5,3]},"gk":true,"org":"Atlanta","alt":null,"pais":"Argentina","deb":1976,"ult":1998,"dec":1980,"sel":false,"fn":"Hugo"},{"id":1427,"ap":"García","nombre":"Javier García","pos":"ARQ","pierna":"D","h":0.684,"pj":75,"gol":0,"pen":0,"tit":2.3,"a":{"n":12,"sv":3,"afuera":0,"dive":{"P1":6,"P2":3,"M":3},"ks":{"P1":[6,1],"P2":[4,1],"M":[2,1]},"define":0,"dw":0.0,"tandas":2,"adiv":[12,8]},"gk":true,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":2008,"ult":2026,"dec":2010,"sel":false,"fn":"Javier"},{"id":1639,"ap":"Brey","nombre":"Leandro Brey","pos":"ARQ","pierna":"D","h":0.41,"pj":44,"gol":0,"pen":0,"tit":0.0,"a":{"n":4,"sv":0,"afuera":0,"dive":{"P1":0,"P2":0,"M":0},"ks":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[0,0]},"gk":true,"org":"Los Andes","alt":1.91,"pais":"Argentina","deb":2022,"ult":2026,"dec":2020,"sel":false,"fn":"Leandro"},{"id":1585,"ap":"Díaz","nombre":"Marcos Díaz","pos":"ARQ","pierna":"D","h":null,"pj":6,"gol":0,"pen":0,"tit":0.0,"a":{"n":3,"sv":0,"afuera":0,"dive":{"P1":2,"P2":1,"M":0},"ks":{"P1":[1,0],"P2":[2,0],"M":[0,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[3,0]},"gk":true,"org":"Colón (Sfe)","alt":1.87,"pais":"Argentina","deb":2019,"ult":2020,"dec":2010,"sel":false,"fn":"Marcos"},{"id":1250,"ap":"Córdoba","nombre":"Oscar Córdoba","pos":"ARQ","pierna":"D","h":0.892,"pj":162,"gol":0,"pen":0,"tit":12.3,"a":{"n":13,"sv":4,"afuera":3,"dive":{"P1":5,"P2":8,"M":0},"ks":{"P1":[6,2],"P2":[4,2],"M":[0,0]},"define":0,"dw":0.0,"tandas":3,"adiv":[13,10]},"gk":true,"org":"América (Col)","alt":1.86,"pais":"Colombia","deb":1997,"ult":2001,"dec":2000,"sel":true,"fn":"Oscar"},{"id":1487,"ap":"Ustari","nombre":"Oscar Ustari","pos":"ARQ","pierna":"D","h":0.142,"pj":16,"gol":0,"pen":0,"tit":0.0,"a":{"n":6,"sv":2,"afuera":0,"dive":{"P1":2,"P2":4,"M":0},"ks":{"P1":[5,2],"P2":[1,0],"M":[0,0]},"define":0,"dw":0.0,"tandas":1,"adiv":[6,3]},"gk":true,"org":"Independiente","alt":1.83,"pais":"Argentina","deb":2012,"ult":2013,"dec":2010,"sel":false,"fn":"Oscar"},{"id":1239,"ap":"Abbondanzieri","nombre":"Roberto Abbondanzieri","pos":"ARQ","pierna":"D","h":0.981,"pj":345,"gol":0,"pen":0,"tit":16.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":2.8800000000000003,"mw":0.0,"out":0,"tandas":1},"a":{"n":19,"sv":7,"afuera":2,"dive":{"P1":3,"P2":10,"M":6},"ks":{"P1":[4,1],"P2":[8,2],"M":[5,4]},"define":1,"dw":2.8800000000000003,"tandas":4,"adiv":[19,12]},"gk":true,"org":"Rosario Central","alt":1.86,"pais":"Argentina","deb":1997,"ult":2010,"dec":2000,"sel":true,"fn":"Roberto"},{"id":1472,"ap":"Sosa","nombre":"Sebastián Sosa","pos":"ARQ","pierna":"D","h":null,"pj":9,"gol":0,"pen":0,"tit":1.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"a":{"n":22,"sv":3,"afuera":3,"dive":{"P1":5,"P2":9,"M":8},"ks":{"P1":[6,1],"P2":[5,0],"M":[8,2]},"define":0,"dw":0.0,"tandas":3,"adiv":[22,7]},"gk":true,"org":"Peñarol (Uru)","alt":1.81,"pais":"Uruguay","deb":2011,"ult":2012,"dec":2010,"sel":true,"fn":"Sebastián"},{"id":1642,"ap":"Romero","nombre":"Sergio Romero","pos":"ARQ","pierna":"D","h":0.476,"pj":88,"gol":0,"pen":0,"tit":0.0,"a":{"n":16,"sv":8,"afuera":0,"dive":{"P1":5,"P2":9,"M":2},"ks":{"P1":[6,1],"P2":[9,6],"M":[1,1]},"define":1,"dw":1.0,"tandas":4,"adiv":[16,11]},"gk":true,"org":"Racing Club","alt":1.92,"pais":"Argentina","deb":2023,"ult":2024,"dec":2020,"sel":true,"fn":"Sergio"},{"id":1686,"ap":"Montero","nombre":"Álvaro Montero","pos":"ARQ","pierna":"D","h":0.236,"pj":22,"gol":0,"pen":0,"tit":0.0,"a":{"n":10,"sv":3,"afuera":1,"dive":{"P1":4,"P2":6,"M":0},"ks":{"P1":[4,1],"P2":[4,2],"M":[1,0]},"define":0,"dw":0.0,"tandas":2,"adiv":[10,3]},"gk":true,"org":"Sao Caetano","alt":2.01,"pais":"Colombia","deb":2026,"ult":2026,"dec":2020,"sel":true,"fn":"Álvaro"},{"id":1611,"ap":"Sández","nombre":"Agustín Sández","pos":"LI","pierna":"I","h":0.562,"pj":44,"gol":2,"pen":0,"tit":3.3,"k":{"n":2,"g":2,"s":{"P1":[1,1],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.84,"pais":"Argentina","deb":2021,"ult":2023,"dec":2020,"sel":false,"fn":"Agustín"},{"id":1603,"ap":"Varela","nombre":"Alan Varela","pos":"MCD","pierna":"D","h":0.665,"pj":111,"gol":2,"pen":0,"tit":5.3,"k":{"n":3,"g":2,"s":{"P1":[1,0],"P2":[1,1],"M":[1,1]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.26,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2020,"ult":2023,"dec":2020,"sel":false,"fn":"Alan"},{"id":1676,"ap":"Velasco","nombre":"Alan Velasco","pos":"EXT","pierna":"D","h":0.444,"pj":59,"gol":6,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":2.2,"out":0,"tandas":1},"gk":false,"org":"Independiente","alt":1.67,"pais":"Argentina","deb":2025,"ult":2026,"dec":2020,"sel":false,"fn":"Alan"},{"id":1178,"ap":"Márcico","nombre":"Alberto Márcico","pos":"ENG","pierna":"D","h":0.841,"pj":154,"gol":15,"pen":4,"tit":3.3,"k":{"n":2,"g":2,"s":{"P1":[2,2],"P2":[0,0],"M":[0,0]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Ferro","alt":1.78,"pais":"Argentina","deb":1992,"ult":1995,"dec":1990,"sel":false,"fn":"Alberto"},{"id":1583,"ap":"Mac Allister","nombre":"Alexis Mac Allister","pos":"MC","pierna":"D","h":0.379,"pj":21,"gol":2,"pen":0,"tit":1.3,"k":{"n":1,"g":0,"s":{"P1":[1,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.74,"pais":"Argentina","deb":2019,"ult":2019,"dec":2010,"sel":true,"fn":"Alexis"},{"id":1327,"ap":"Cascini","nombre":"Alfredo Cascini","pos":"MCD","pierna":"D","h":0.686,"pj":113,"gol":2,"pen":0,"tit":9.1,"k":{"n":2,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":7.2,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Platense","alt":1.72,"pais":"Argentina","deb":2002,"ult":2005,"dec":2000,"sel":false,"fn":"Alfredo"},{"id":1083,"ap":"Graciani","nombre":"Alfredo Graciani","pos":"SD","pierna":null,"h":0.928,"pj":248,"gol":83,"pen":9,"tit":3.9,"k":{"n":7,"g":5,"s":{"P1":[1,0],"P2":[1,1],"M":[1,1]},"abre":[2,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":7},"gk":false,"org":"Atlanta","alt":null,"pais":"Argentina","deb":1985,"ult":1994,"dec":1980,"sel":false,"fn":"Alfredo"},{"id":1523,"ap":"Chávez","nombre":"Andrés Chávez","pos":"ED","pierna":"I","h":0.732,"pj":64,"gol":18,"pen":2,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Banfield","alt":1.84,"pais":"Argentina","deb":2014,"ult":2017,"dec":2010,"sel":false,"fn":"Andrés"},{"id":1142,"ap":"Apud","nombre":"Antonio Apud","pos":"MI","pierna":null,"h":0.511,"pj":53,"gol":1,"pen":0,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Talleres (Cba)","alt":1.74,"pais":"Argentina","deb":1990,"ult":1992,"dec":1990,"sel":false,"fn":"Antonio"},{"id":1133,"ap":"Giunta","nombre":"Blas Giunta","pos":"MCD","pierna":null,"h":0.872,"pj":190,"gol":10,"pen":1,"tit":6.2,"k":{"n":4,"g":3,"s":{"P1":[0,0],"P2":[4,3],"M":[0,0]},"abre":[0,0],"define":2,"defmiss":1,"dw":3.0,"mw":1.2,"out":0,"tandas":4},"gk":false,"org":"Platense","alt":null,"pais":"Argentina","deb":1989,"ult":1997,"dec":1990,"sel":false,"fn":"Blas"},{"id":1644,"ap":"Valdez","nombre":"Bruno Valdez","pos":"DFC","pierna":"D","h":0.348,"pj":34,"gol":0,"pen":0,"tit":1.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Sol de América","alt":1.81,"pais":"Paraguay","deb":2023,"ult":2023,"dec":2020,"sel":true,"fn":"Bruno"},{"id":1577,"ap":"Izquierdoz","nombre":"Carlos Izquierdoz","pos":"DFC","pierna":"D","h":0.79,"pj":146,"gol":7,"pen":0,"tit":6.6,"k":{"n":9,"g":8,"s":{"P1":[4,4],"P2":[3,3],"M":[2,1]},"abre":[0,0],"define":2,"defmiss":1,"dw":2.62,"mw":2.2,"out":1,"tandas":9},"gk":false,"org":"Atlanta","alt":1.89,"pais":"Argentina","deb":2018,"ult":2022,"dec":2020,"sel":false,"fn":"Carlos"},{"id":1672,"ap":"Palacios","nombre":"Carlos Palacios","pos":"MCO","pierna":"D","h":0.394,"pj":47,"gol":3,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Colo Colo","alt":1.8,"pais":"Chile","deb":2025,"ult":2026,"dec":2020,"sel":true,"fn":"Carlos"},{"id":1081,"ap":"Tapia","nombre":"Carlos Tapia","pos":"MCO","pierna":null,"h":0.909,"pj":217,"gol":47,"pen":1,"tit":3.6,"k":{"n":4,"g":3,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":4},"gk":false,"org":"River Plate","alt":null,"pais":"Argentina","deb":1985,"ult":1994,"dec":1980,"sel":false,"fn":"Carlos"},{"id":1322,"ap":"Tevez","nombre":"Carlos Tevez","pos":"SD","pierna":"D","h":0.983,"pj":279,"gol":94,"pen":4,"tit":17.3,"k":{"n":8,"g":7,"s":{"P1":[3,2],"P2":[3,3],"M":[2,2]},"abre":[4,4],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":8},"gk":false,"org":"Inferiores","alt":1.71,"pais":"Argentina","deb":2001,"ult":2021,"dec":2010,"sel":true,"fn":"Carlos"},{"id":1116,"ap":"Marangoni","nombre":"Claudio Marangoni","pos":"MCD","pierna":null,"h":0.677,"pj":93,"gol":8,"pen":0,"tit":2.6,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Chacarita","alt":null,"pais":"Argentina","deb":1988,"ult":1990,"dec":1980,"sel":false,"fn":"Claudio"},{"id":1365,"ap":"Morel Rodríguez","nombre":"Claudio Morel Rodríguez","pos":"LI","pierna":"I","h":0.718,"pj":199,"gol":1,"pen":0,"tit":10.5,"k":{"n":1,"g":0,"s":{"P1":[1,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":1},"gk":false,"org":"San Lorenzo","alt":1.75,"pais":"Paraguay","deb":2004,"ult":2010,"dec":2000,"sel":true,"fn":"Claudio"},{"id":1492,"ap":"Pérez","nombre":"Claudio Pérez","pos":"DFC","pierna":"D","h":0.451,"pj":38,"gol":2,"pen":1,"tit":0.0,"k":{"n":3,"g":2,"s":{"P1":[0,0],"P2":[2,1],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Flandria","alt":1.88,"pais":"Argentina","deb":2013,"ult":2015,"dec":2010,"sel":false,"fn":"Claudio"},{"id":1139,"ap":"Rodríguez","nombre":"Claudio Rodríguez","pos":"DC","pierna":null,"h":0.591,"pj":52,"gol":8,"pen":0,"tit":2.3,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1989,"ult":1993,"dec":1990,"sel":false,"fn":"Claudio"},{"id":1387,"ap":"Chávez","nombre":"Cristian Chávez","pos":"MCO","pierna":"D","h":0.782,"pj":157,"gol":11,"pen":0,"tit":5.0,"k":{"n":3,"g":1,"s":{"P1":[0,0],"P2":[3,1],"M":[0,0]},"abre":[1,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.69,"pais":"Paraguay","deb":2005,"ult":2013,"dec":2010,"sel":false,"fn":"Cristian"},{"id":1440,"ap":"Erbes","nombre":"Cristian Erbes","pos":"MCD","pierna":"D","h":0.725,"pj":155,"gol":5,"pen":0,"tit":4.6,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.73,"pais":"Argentina","deb":2009,"ult":2016,"dec":2010,"sel":false,"fn":"Cristian"},{"id":1528,"ap":"Pavón","nombre":"Cristian Pavón","pos":"EXT","pierna":"D","h":0.905,"pj":164,"gol":36,"pen":1,"tit":5.9,"k":{"n":6,"g":6,"s":{"P1":[2,2],"P2":[3,3],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":6},"gk":false,"org":"Talleres (Cba)","alt":1.74,"pais":"Argentina","deb":2015,"ult":2021,"dec":2010,"sel":true,"fn":"Cristian"},{"id":1238,"ap":"Traverso","nombre":"Cristian Traverso","pos":"DFC","pierna":"I","h":0.802,"pj":205,"gol":4,"pen":0,"tit":13.9,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.79,"pais":"Argentina","deb":1997,"ult":2005,"dec":2000,"sel":false,"fn":"Cristian"},{"id":1375,"ap":"Díaz","nombre":"Daniel Díaz","pos":"DFC","pierna":"D","h":0.857,"pj":197,"gol":13,"pen":0,"tit":11.5,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Rosario Central","alt":1.83,"pais":"Argentina","deb":2005,"ult":2016,"dec":2000,"sel":true,"fn":"Daniel"},{"id":1543,"ap":"Benedetto","nombre":"Darío Benedetto","pos":"DC","pierna":"D","h":0.936,"pj":172,"gol":71,"pen":10,"tit":6.9,"k":{"n":7,"g":6,"s":{"P1":[3,2],"P2":[2,2],"M":[2,2]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":7},"gk":false,"org":"Arsenal","alt":1.75,"pais":"Argentina","deb":2016,"ult":2024,"dec":2020,"sel":true,"fn":"Darío"},{"id":885,"ap":"Felman","nombre":"Darío Felman","pos":"EI","pierna":null,"h":0.824,"pj":118,"gol":36,"pen":0,"tit":8.8,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Gimnasia (Mza)","alt":null,"pais":"Argentina","deb":1975,"ult":1978,"dec":1970,"sel":false,"fn":"Darío"},{"id":1601,"ap":"González","nombre":"Diego González","pos":"MC","pierna":"D","h":0.55,"pj":44,"gol":3,"pen":0,"tit":3.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Lanús","alt":1.8,"pais":"Argentina","deb":2020,"ult":2023,"dec":2020,"sel":false,"fn":"Diego"},{"id":1112,"ap":"Latorre","nombre":"Diego Latorre","pos":"SD","pierna":null,"h":0.921,"pj":242,"gol":77,"pen":2,"tit":3.9,"k":{"n":3,"g":3,"s":{"P1":[1,1],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.3,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1987,"ult":1998,"dec":1980,"sel":false,"fn":"Diego"},{"id":1123,"ap":"Soñora","nombre":"Diego Soñora","pos":"MD","pierna":null,"h":0.769,"pj":266,"gol":5,"pen":0,"tit":6.0,"k":{"n":2,"g":1,"s":{"P1":[0,0],"P2":[2,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":2},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1988,"ult":1996,"dec":1990,"sel":false,"fn":"Diego"},{"id":1647,"ap":"Cavani","nombre":"Edinson Cavani","pos":"DC","pierna":"D","h":0.64,"pj":81,"gol":28,"pen":3,"tit":0.0,"k":{"n":3,"g":2,"s":{"P1":[2,1],"P2":[0,0],"M":[0,0]},"abre":[1,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Valencia","alt":1.84,"pais":"Uruguay","deb":2023,"ult":2026,"dec":2020,"sel":true,"fn":"Edinson"},{"id":1595,"ap":"Salvio","nombre":"Eduardo Salvio","pos":"ED","pierna":"D","h":0.777,"pj":69,"gol":19,"pen":2,"tit":3.3,"k":{"n":5,"g":3,"s":{"P1":[2,2],"P2":[1,0],"M":[2,1]},"abre":[0,0],"define":1,"defmiss":1,"dw":1.8,"mw":1.0,"out":1,"tandas":5},"gk":false,"org":"Lanús","alt":1.73,"pais":"Argentina","deb":2019,"ult":2022,"dec":2020,"sel":true,"fn":"Eduardo"},{"id":1560,"ap":"Cardona","nombre":"Edwin Cardona","pos":"MCO","pierna":"D","h":0.818,"pj":92,"gol":18,"pen":3,"tit":3.3,"k":{"n":2,"g":0,"s":{"P1":[1,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Atlético Nacional","alt":1.85,"pais":"Colombia","deb":2017,"ult":2021,"dec":2010,"sel":true,"fn":"Edwin"},{"id":1471,"ap":"Insúa","nombre":"Emanuel Insúa","pos":"LI","pierna":"I","h":0.392,"pj":43,"gol":2,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.82,"pais":"Argentina","deb":2011,"ult":2014,"dec":2010,"sel":false,"fn":"Emanuel"},{"id":1494,"ap":"Gigliotti","nombre":"Emmanuel Gigliotti","pos":"DC","pierna":"D","h":0.606,"pj":62,"gol":23,"pen":3,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"General Lamadrid","alt":1.83,"pais":"Argentina","deb":2013,"ult":2015,"dec":2010,"sel":false,"fn":"Emmanuel"},{"id":1687,"ap":"Valencia","nombre":"Enner Valencia","pos":"DC","pierna":"D","h":0.275,"pj":16,"gol":5,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Club Deportivo Caribe Junior","alt":1.77,"pais":"Ecuador","deb":2026,"ult":2026,"dec":2020,"sel":true,"fn":"Enner"},{"id":1085,"ap":"Hrabina","nombre":"Enrique Hrabina","pos":"DFC","pierna":null,"h":0.739,"pj":178,"gol":5,"pen":1,"tit":1.3,"k":{"n":6,"g":5,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":6},"gk":false,"org":"San Lorenzo","alt":null,"pais":"Argentina","deb":1985,"ult":1991,"dec":1980,"sel":false,"fn":"Enrique"},{"id":1463,"ap":"Ruiz","nombre":"Enzo Ruiz","pos":"DFC","pierna":"D","h":null,"pj":10,"gol":0,"pen":0,"tit":1.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.83,"pais":"Argentina","deb":2010,"ult":2012,"dec":2010,"sel":false,"fn":"Enzo"},{"id":1617,"ap":"Rolón","nombre":"Esteban Rolón","pos":"MCD","pierna":"D","h":0.381,"pj":36,"gol":0,"pen":0,"tit":1.3,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.75,"pais":"Argentina","deb":2021,"ult":2023,"dec":2020,"sel":false,"fn":"Esteban"},{"id":1423,"ap":"Benavídez","nombre":"Exequiel Benavídez","pos":"MCD","pierna":"D","h":null,"pj":14,"gol":0,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.79,"pais":"Argentina","deb":2008,"ult":2012,"dec":2000,"sel":false,"fn":"Exequiel"},{"id":1602,"ap":"Zeballos","nombre":"Exequiel Zeballos","pos":"EXT","pierna":"D","h":0.845,"pj":140,"gol":16,"pen":2,"tit":4.3,"k":{"n":4,"g":4,"s":{"P1":[1,1],"P2":[2,2],"M":[0,0]},"abre":[2,2],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":4},"gk":false,"org":"Inferiores","alt":1.7,"pais":"Argentina","deb":2020,"ult":2026,"dec":2020,"sel":true,"fn":"Exequiel"},{"id":1047,"ap":"Carrizo","nombre":"Fabián Carrizo","pos":"MCD","pierna":null,"h":0.618,"pj":177,"gol":5,"pen":0,"tit":1.2,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.3,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1983,"ult":1996,"dec":1980,"sel":false,"fn":"Fabián"},{"id":1509,"ap":"Carrizo","nombre":"Federico Carrizo","pos":"MI","pierna":"D","h":0.56,"pj":62,"gol":6,"pen":0,"tit":1.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":1,"defmiss":0,"dw":2.53,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Rosario Central","alt":1.73,"pais":"Argentina","deb":2014,"ult":2017,"dec":2010,"sel":false,"fn":"Federico"},{"id":1372,"ap":"Insúa","nombre":"Federico Insúa","pos":"ENG","pierna":"I","h":0.746,"pj":79,"gol":16,"pen":0,"tit":5.6,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.8,"pais":"Argentina","deb":2005,"ult":2010,"dec":2000,"sel":true,"fn":"Federico"},{"id":1368,"ap":"Gago","nombre":"Fernando Gago","pos":"MCD","pierna":"D","h":0.885,"pj":199,"gol":8,"pen":2,"tit":11.9,"k":{"n":2,"g":1,"s":{"P1":[1,1],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.6,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2004,"ult":2018,"dec":2000,"sel":true,"fn":"Fernando"},{"id":1197,"ap":"Gamboa","nombre":"Fernando Gamboa","pos":"DFC","pierna":"D","h":0.352,"pj":65,"gol":0,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Newell's","alt":1.81,"pais":"Argentina","deb":1994,"ult":1996,"dec":1990,"sel":false,"fn":"Fernando"},{"id":1330,"ap":"Cángele","nombre":"Franco Cángele","pos":"SD","pierna":"I","h":0.749,"pj":63,"gol":10,"pen":1,"tit":5.1,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":3.9600000000000004,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.79,"pais":"Argentina","deb":2002,"ult":2013,"dec":2000,"sel":false,"fn":"Franco"},{"id":1547,"ap":"Fabra","nombre":"Frank Fabra","pos":"LI","pierna":"I","h":0.866,"pj":246,"gol":15,"pen":0,"tit":9.2,"k":{"n":3,"g":3,"s":{"P1":[1,1],"P2":[1,1],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Envigado","alt":1.74,"pais":"Colombia","deb":2016,"ult":2025,"dec":2020,"sel":true,"fn":"Frank"},{"id":1143,"ap":"Batistuta","nombre":"Gabriel Batistuta","pos":"DC","pierna":"D","h":0.667,"pj":47,"gol":19,"pen":5,"tit":1.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"River Plate","alt":1.85,"pais":"Argentina","deb":1990,"ult":1991,"dec":1990,"sel":false,"fn":"Gabriel"},{"id":1432,"ap":"Sauro","nombre":"Gastón Sauro","pos":"DFC","pierna":"D","h":0.329,"pj":19,"gol":1,"pen":0,"tit":1.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.89,"pais":"Argentina","deb":2009,"ult":2012,"dec":2000,"sel":false,"fn":"Gastón"},{"id":1247,"ap":"Barros Schelotto","nombre":"Guillermo Barros Schelotto","pos":"ED","pierna":"D","h":0.989,"pj":301,"gol":86,"pen":28,"tit":27.0,"k":{"n":3,"g":2,"s":{"P1":[2,1],"P2":[0,0],"M":[1,1]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Gimnasia (LP)","alt":1.71,"pais":"Argentina","deb":1997,"ult":2007,"dec":1990,"sel":true,"fn":"Guillermo"},{"id":1475,"ap":"Fernández","nombre":"Guillermo Fernández","pos":"MC","pierna":"D","h":0.788,"pj":192,"gol":9,"pen":0,"tit":5.6,"k":{"n":5,"g":4,"s":{"P1":[0,0],"P2":[2,2],"M":[3,2]},"abre":[0,0],"define":1,"defmiss":0,"dw":3.08,"mw":0.0,"out":1,"tandas":5},"gk":false,"org":"Inferiores","alt":1.76,"pais":"Argentina","deb":2012,"ult":2024,"dec":2020,"sel":false,"fn":"Guillermo"},{"id":1110,"ap":"Gutiérrez","nombre":"Humberto Gutiérrez","pos":"DC","pierna":null,"h":0.484,"pj":50,"gol":4,"pen":0,"tit":1.2,"k":{"n":3,"g":3,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.3,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Atl. Ledesma (Jujuy)","alt":null,"pais":"Argentina","deb":1987,"ult":1990,"dec":1980,"sel":false,"fn":"Humberto"},{"id":1018,"ap":"Stafuza","nombre":"Ivar Stafuza","pos":"LD","pierna":null,"h":0.837,"pj":229,"gol":8,"pen":1,"tit":2.6,"k":{"n":3,"g":1,"s":{"P1":[2,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1983,"ult":1991,"dec":1980,"sel":false,"fn":"Ivar"},{"id":1596,"ap":"Hurtado","nombre":"Jan Hurtado","pos":"DC","pierna":"D","h":0.349,"pj":18,"gol":2,"pen":0,"tit":1.3,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Táchira (Ven)","alt":1.83,"pais":"Venezuela","deb":2019,"ult":2019,"dec":2010,"sel":true,"fn":"Jan"},{"id":1311,"ap":"Villarreal","nombre":"Javier Villarreal","pos":"MD","pierna":"D","h":0.72,"pj":77,"gol":9,"pen":0,"tit":5.7,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":1,"defmiss":0,"dw":3.08,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Talleres (Cba)","alt":1.75,"pais":"Argentina","deb":2001,"ult":2004,"dec":2000,"sel":false,"fn":"Javier"},{"id":1248,"ap":"Bermúdez","nombre":"Jorge Bermúdez","pos":"DFC","pierna":"D","h":0.855,"pj":165,"gol":16,"pen":0,"tit":12.3,"k":{"n":3,"g":2,"s":{"P1":[1,1],"P2":[1,1],"M":[1,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":3.9600000000000004,"mw":0.0,"out":1,"tandas":3},"gk":false,"org":"América (Col)","alt":1.88,"pais":"Colombia","deb":1997,"ult":2001,"dec":2000,"sel":true,"fn":"Jorge"},{"id":1101,"ap":"Comas","nombre":"Jorge Comas","pos":"EI","pierna":null,"h":0.704,"pj":126,"gol":63,"pen":8,"tit":0.0,"k":{"n":4,"g":4,"s":{"P1":[1,1],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":4},"gk":false,"org":"Colón (Sfe)","alt":null,"pais":"Argentina","deb":1986,"ult":1989,"dec":1980,"sel":false,"fn":"Jorge"},{"id":1107,"ap":"Cucciuffo","nombre":"José Luis Cucciuffo","pos":"DFC","pierna":null,"h":0.706,"pj":116,"gol":6,"pen":0,"tit":2.6,"k":{"n":4,"g":3,"s":{"P1":[1,1],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.3,"out":0,"tandas":4},"gk":false,"org":"Chaco For Ever","alt":null,"pais":"Argentina","deb":1987,"ult":1990,"dec":1980,"sel":false,"fn":"José"},{"id":889,"ap":"Tesare","nombre":"José Luis Tesare","pos":"DFC","pierna":null,"h":0.695,"pj":88,"gol":3,"pen":0,"tit":6.6,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1975,"ult":1982,"dec":1970,"sel":false,"fn":"José"},{"id":1106,"ap":"Villarreal","nombre":"José Luis Villarreal","pos":"MC","pierna":null,"h":0.755,"pj":156,"gol":10,"pen":4,"tit":1.3,"k":{"n":2,"g":1,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Belgrano (Cba)","alt":null,"pais":"Argentina","deb":1987,"ult":1993,"dec":1980,"sel":false,"fn":"José"},{"id":1134,"ap":"Ponce","nombre":"José Ponce","pos":"MI","pierna":null,"h":0.605,"pj":33,"gol":5,"pen":1,"tit":2.6,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Estudiantes (LP)","alt":null,"pais":"Argentina","deb":1989,"ult":1990,"dec":1990,"sel":false,"fn":"José"},{"id":1393,"ap":"Krupoviesa","nombre":"Juan Krupoviesa","pos":"LI","pierna":"I","h":0.734,"pj":91,"gol":5,"pen":0,"tit":7.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Estudiantes (LP)","alt":1.78,"pais":"Argentina","deb":2005,"ult":2010,"dec":2000,"sel":false,"fn":"Juan"},{"id":1452,"ap":"Insaurralde","nombre":"Juan Manuel Insaurralde","pos":"DFI","pierna":"I","h":0.746,"pj":126,"gol":7,"pen":0,"tit":3.6,"k":{"n":2,"g":1,"s":{"P1":[2,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.15,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Chacarita","alt":1.87,"pais":"Argentina","deb":2010,"ult":2017,"dec":2010,"sel":false,"fn":"Juan"},{"id":1490,"ap":"Martínez","nombre":"Juan Manuel Martínez","pos":"ED","pierna":"D","h":0.69,"pj":78,"gol":12,"pen":1,"tit":1.3,"k":{"n":2,"g":1,"s":{"P1":[0,0],"P2":[2,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":2.53,"out":0,"tandas":1},"gk":false,"org":"Vélez Sarsfield","alt":1.77,"pais":"Argentina","deb":2013,"ult":2015,"dec":2010,"sel":true,"fn":"Juan"},{"id":1459,"ap":"Sánchez Miño","nombre":"Juan Manuel Sánchez Miño","pos":"MI","pierna":"I","h":0.617,"pj":99,"gol":10,"pen":0,"tit":1.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2010,"ult":2014,"dec":2010,"sel":false,"fn":"Juan"},{"id":1608,"ap":"Ramírez","nombre":"Juan Ramírez","pos":"MC","pierna":"I","h":0.64,"pj":95,"gol":2,"pen":0,"tit":4.3,"k":{"n":2,"g":1,"s":{"P1":[2,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Argentinos Juniors","alt":1.73,"pais":"Argentina","deb":2021,"ult":2024,"dec":2020,"sel":false,"fn":"Juan"},{"id":1235,"ap":"Riquelme","nombre":"Juan Román Riquelme","pos":"ENG","pierna":"D","h":0.993,"pj":387,"gol":92,"pen":14,"tit":19.5,"k":{"n":7,"g":6,"s":{"P1":[3,3],"P2":[3,3],"M":[1,0]},"abre":[3,2],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":6},"gk":false,"org":"Argentinos Juniors","alt":1.83,"pais":"Argentina","deb":1996,"ult":2014,"dec":1990,"sel":true,"fn":"Juan"},{"id":1115,"ap":"Simón","nombre":"Juan Simón","pos":"DFC","pierna":null,"h":0.661,"pj":218,"gol":0,"pen":0,"tit":7.2,"k":{"n":3,"g":3,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Newell's","alt":null,"pais":"Argentina","deb":1988,"ult":1994,"dec":1980,"sel":false,"fn":"Juan"},{"id":1571,"ap":"Buffarini","nombre":"Julio Buffarini","pos":"LD","pierna":"D","h":0.676,"pj":107,"gol":2,"pen":0,"tit":4.6,"k":{"n":4,"g":4,"s":{"P1":[1,1],"P2":[3,3],"M":[0,0]},"abre":[0,0],"define":3,"defmiss":0,"dw":3.6900000000000004,"mw":0.0,"out":0,"tandas":4},"gk":false,"org":"Talleres (Cba)","alt":1.7,"pais":"Argentina","deb":2018,"ult":2021,"dec":2010,"sel":true,"fn":"Julio"},{"id":1136,"ap":"Gaona","nombre":"Julio Gaona","pos":"MCO","pierna":null,"h":0.245,"pj":16,"gol":2,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Unión (Sfe)","alt":null,"pais":"Argentina","deb":1989,"ult":1991,"dec":1990,"sel":false,"fn":"Julio"},{"id":1653,"ap":"Zenón","nombre":"Kevin Zenón","pos":"MI","pierna":"I","h":0.547,"pj":91,"gol":11,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Unión (Sfe)","alt":1.82,"pais":"Argentina","deb":2024,"ult":2026,"dec":2020,"sel":true,"fn":"Kevin"},{"id":1655,"ap":"Blanco","nombre":"Lautaro Blanco","pos":"LI","pierna":"I","h":0.501,"pj":127,"gol":2,"pen":0,"tit":0.0,"k":{"n":2,"g":2,"s":{"P1":[0,0],"P2":[1,1],"M":[1,1]},"abre":[1,1],"define":1,"defmiss":0,"dw":1.6,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Rosario Central","alt":1.76,"pais":"Argentina","deb":2024,"ult":2026,"dec":2020,"sel":false,"fn":"Lautaro"},{"id":1447,"ap":"Marín","nombre":"Leandro Marín","pos":"LD","pierna":"D","h":0.543,"pj":61,"gol":3,"pen":0,"tit":1.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.84,"pais":"Argentina","deb":2010,"ult":2016,"dec":2010,"sel":false,"fn":"Leandro"},{"id":1464,"ap":"Paredes","nombre":"Leandro Paredes","pos":"MCO","pierna":"D","h":0.615,"pj":89,"gol":10,"pen":3,"tit":0.0,"k":{"n":3,"g":2,"s":{"P1":[1,1],"P2":[1,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":2010,"ult":2026,"dec":2020,"sel":true,"fn":"Leandro"},{"id":1466,"ap":"Somoza","nombre":"Leandro Somoza","pos":"MCD","pierna":"D","h":0.602,"pj":91,"gol":3,"pen":0,"tit":2.3,"k":{"n":3,"g":2,"s":{"P1":[1,1],"P2":[1,1],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Vélez Sarsfield","alt":1.85,"pais":"Argentina","deb":2011,"ult":2013,"dec":2010,"sel":true,"fn":"Leandro"},{"id":1539,"ap":"Jara","nombre":"Leonardo Jara","pos":"LD","pierna":"D","h":0.667,"pj":108,"gol":2,"pen":0,"tit":3.6,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Estudiantes (LP)","alt":1.85,"pais":"Argentina","deb":2016,"ult":2021,"dec":2010,"sel":false,"fn":"Leonardo"},{"id":1688,"ap":"Flores","nombre":"Leonel Flores","pos":"ED","pierna":"D","h":0.32,"pj":23,"gol":4,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2026,"ult":2026,"dec":2020,"sel":false,"fn":"Leonel"},{"id":1638,"ap":"Langoni","nombre":"Luca Langoni","pos":"ED","pierna":"D","h":0.643,"pj":70,"gol":11,"pen":0,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.73,"pais":"Argentina","deb":2022,"ult":2024,"dec":2020,"sel":false,"fn":"Luca"},{"id":1646,"ap":"Janson","nombre":"Lucas Janson","pos":"EI","pierna":"D","h":0.397,"pj":51,"gol":3,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Vélez Sarsfield","alt":1.71,"pais":"Argentina","deb":2023,"ult":2026,"dec":2020,"sel":false,"fn":"Lucas"},{"id":1098,"ap":"Abramovich","nombre":"Luis Abramovich","pos":"LI","pierna":null,"h":0.649,"pj":201,"gol":5,"pen":0,"tit":1.0,"k":{"n":6,"g":4,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":5},"gk":false,"org":"Chacarita","alt":null,"pais":"Argentina","deb":1986,"ult":1992,"dec":1980,"sel":false,"fn":"Luis"},{"id":1171,"ap":"Carranza","nombre":"Luis Carranza","pos":"SD","pierna":"D","h":0.691,"pj":105,"gol":13,"pen":0,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Racing Club","alt":1.73,"pais":"Argentina","deb":1992,"ult":1995,"dec":1990,"sel":true,"fn":"Luis"},{"id":1292,"ap":"Delgado","nombre":"Marcelo Delgado","pos":"ED","pierna":"D","h":0.954,"pj":193,"gol":50,"pen":1,"tit":17.5,"k":{"n":3,"g":3,"s":{"P1":[1,1],"P2":[2,2],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Rosario Central","alt":1.75,"pais":"Argentina","deb":2000,"ult":2006,"dec":2000,"sel":true,"fn":"Marcelo"},{"id":1607,"ap":"Rojo","nombre":"Marcos Rojo","pos":"DFI","pierna":"I","h":0.823,"pj":118,"gol":9,"pen":3,"tit":3.3,"k":{"n":8,"g":8,"s":{"P1":[1,1],"P2":[4,4],"M":[1,1]},"abre":[1,1],"define":1,"defmiss":0,"dw":2.53,"mw":0.0,"out":0,"tandas":8},"gk":false,"org":"Estudiantes (LP)","alt":1.86,"pais":"Argentina","deb":2021,"ult":2025,"dec":2020,"sel":true,"fn":"Marcos"},{"id":932,"ap":"Zanabria","nombre":"Mario Zanabria","pos":"MCO","pierna":null,"h":0.835,"pj":179,"gol":16,"pen":0,"tit":9.7,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Unión (Sfe)","alt":null,"pais":"Argentina","deb":1976,"ult":1982,"dec":1970,"sel":false,"fn":"Mario"},{"id":1252,"ap":"Palermo","nombre":"Martín Palermo","pos":"DC","pierna":"I","h":0.998,"pj":404,"gol":236,"pen":31,"tit":20.9,"k":{"n":2,"g":1,"s":{"P1":[2,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":2},"gk":false,"org":"Estudiantes (LP)","alt":1.87,"pais":"Argentina","deb":1997,"ult":2011,"dec":2000,"sel":true,"fn":"Martín"},{"id":1457,"ap":"Caruzzo","nombre":"Matías Caruzzo","pos":"DFC","pierna":"D","h":0.615,"pj":94,"gol":2,"pen":0,"tit":2.3,"k":{"n":5,"g":3,"s":{"P1":[2,1],"P2":[2,1],"M":[1,1]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.4,"mw":0.0,"out":1,"tandas":5},"gk":false,"org":"Argentinos Juniors","alt":1.85,"pais":"Argentina","deb":2010,"ult":2013,"dec":2010,"sel":true,"fn":"Matías"},{"id":1331,"ap":"Donnet","nombre":"Matías Donnet","pos":"MD","pierna":"D","h":0.764,"pj":88,"gol":12,"pen":0,"tit":9.1,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Unión (Sfe)","alt":1.73,"pais":"Argentina","deb":2002,"ult":2006,"dec":2000,"sel":false,"fn":"Matías"},{"id":1262,"ap":"Serna","nombre":"Mauricio Serna","pos":"MCD","pierna":"D","h":0.695,"pj":123,"gol":2,"pen":0,"tit":10.1,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Nacional (Col)","alt":1.69,"pais":"Colombia","deb":1998,"ult":2002,"dec":1990,"sel":true,"fn":"Mauricio"},{"id":1575,"ap":"Zárate","nombre":"Mauro Zárate","pos":"SD","pierna":"D","h":0.804,"pj":85,"gol":21,"pen":3,"tit":3.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Vélez Sarsfield","alt":1.75,"pais":"Argentina","deb":2018,"ult":2021,"dec":2010,"sel":true,"fn":"Mauro"},{"id":1643,"ap":"Merentiel","nombre":"Miguel Merentiel","pos":"DC","pierna":"D","h":0.797,"pj":187,"gol":66,"pen":4,"tit":1.0,"k":{"n":2,"g":1,"s":{"P1":[0,0],"P2":[2,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":2},"gk":false,"org":"Tanque Sisley","alt":1.76,"pais":"Uruguay","deb":2023,"ult":2026,"dec":2020,"sel":true,"fn":"Miguel"},{"id":1661,"ap":"Giménez","nombre":"Milton Giménez","pos":"DC","pierna":"D","h":0.617,"pj":73,"gol":21,"pen":1,"tit":0.0,"k":{"n":2,"g":2,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.3,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Banfield","alt":1.84,"pais":"Argentina","deb":2024,"ult":2026,"dec":2020,"sel":false,"fn":"Milton"},{"id":1493,"ap":"Zárate","nombre":"Nahuel Zárate","pos":"LI","pierna":"I","h":0.276,"pj":33,"gol":0,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":1},"gk":false,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":2013,"ult":2014,"dec":2010,"sel":false,"fn":"Nahuel"},{"id":1446,"ap":"Blandi","nombre":"Nicolás Blandi","pos":"DC","pierna":"D","h":0.661,"pj":62,"gol":20,"pen":0,"tit":2.3,"k":{"n":2,"g":2,"s":{"P1":[2,2],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":2010,"ult":2013,"dec":2010,"sel":false,"fn":"Nicolás"},{"id":1290,"ap":"Burdisso","nombre":"Nicolás Burdisso","pos":"DFC","pierna":"D","h":0.81,"pj":163,"gol":6,"pen":0,"tit":13.7,"k":{"n":2,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":1,"tandas":2},"gk":false,"org":"Inferiores","alt":1.83,"pais":"Argentina","deb":1999,"ult":2004,"dec":2000,"sel":true,"fn":"Nicolás"},{"id":1439,"ap":"Colazo","nombre":"Nicolás Colazo","pos":"MI","pierna":"I","h":0.739,"pj":125,"gol":9,"pen":0,"tit":3.6,"k":{"n":2,"g":0,"s":{"P1":[1,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.62,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.75,"pais":"Argentina","deb":2009,"ult":2017,"dec":2010,"sel":false,"fn":"Nicolás"},{"id":1635,"ap":"Figal","nombre":"Nicolás Figal","pos":"DFC","pierna":"D","h":0.712,"pj":121,"gol":5,"pen":0,"tit":3.3,"k":{"n":3,"g":3,"s":{"P1":[1,1],"P2":[1,1],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Independiente","alt":1.8,"pais":"Argentina","deb":2022,"ult":2026,"dec":2020,"sel":false,"fn":"Nicolás"},{"id":1610,"ap":"Valentini","nombre":"Nicolás Valentini","pos":"DFI","pierna":"I","h":0.403,"pj":47,"gol":2,"pen":0,"tit":0.0,"k":{"n":2,"g":2,"s":{"P1":[1,1],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.87,"pais":"Argentina","deb":2021,"ult":2024,"dec":2020,"sel":true,"fn":"Nicolás"},{"id":1347,"ap":"Alvarez","nombre":"Pablo Alvarez","pos":"LD","pierna":"D","h":0.387,"pj":30,"gol":0,"pen":0,"tit":1.6,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2003,"ult":2005,"dec":2000,"sel":false,"fn":"Pablo"},{"id":1355,"ap":"Ledesma","nombre":"Pablo Ledesma","pos":"MD","pierna":"D","h":0.937,"pj":236,"gol":17,"pen":6,"tit":10.4,"k":{"n":2,"g":2,"s":{"P1":[0,0],"P2":[1,1],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Inferiores","alt":1.78,"pais":"Argentina","deb":2003,"ult":2014,"dec":2000,"sel":false,"fn":"Pablo"},{"id":1399,"ap":"Mouche","nombre":"Pablo Mouche","pos":"SD","pierna":"I","h":0.77,"pj":140,"gol":18,"pen":0,"tit":3.6,"k":{"n":4,"g":3,"s":{"P1":[0,0],"P2":[2,2],"M":[2,1]},"abre":[1,0],"define":1,"defmiss":0,"dw":1.0,"mw":0.0,"out":0,"tandas":3},"gk":false,"org":"Inferiores","alt":1.77,"pais":"Argentina","deb":2006,"ult":2012,"dec":2010,"sel":false,"fn":"Pablo"},{"id":1529,"ap":"Pérez","nombre":"Pablo Pérez","pos":"MC","pierna":"D","h":0.78,"pj":123,"gol":15,"pen":0,"tit":4.9,"k":{"n":1,"g":0,"s":{"P1":[1,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Newell's","alt":1.75,"pais":"Argentina","deb":2015,"ult":2018,"dec":2010,"sel":true,"fn":"Pablo"},{"id":1499,"ap":"Rodríguez","nombre":"Ribair Rodríguez","pos":"MCD","pierna":"D","h":0.291,"pj":26,"gol":1,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Danubio (Uru)","alt":1.82,"pais":"Uruguay","deb":2013,"ult":2013,"dec":2010,"sel":false,"fn":"Ribair"},{"id":1108,"ap":"Tavares","nombre":"Richard Tavares","pos":"DFC","pierna":null,"h":0.459,"pj":66,"gol":3,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":2.2,"out":0,"tandas":1},"gk":false,"org":"Wanderers (Uru)","alt":null,"pais":"Uruguay","deb":1987,"ult":1989,"dec":1980,"sel":false,"fn":"Richard"},{"id":1195,"ap":"Acuña","nombre":"Roberto Acuña","pos":"MC","pierna":"D","h":0.445,"pj":39,"gol":3,"pen":1,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.75,"pais":"Argentina","deb":1994,"ult":1995,"dec":1990,"sel":false,"fn":"Roberto"},{"id":856,"ap":"Mouzo","nombre":"Roberto Mouzo","pos":"DFC","pierna":null,"h":0.901,"pj":426,"gol":25,"pen":0,"tit":12.3,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[1,1],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1971,"ult":1984,"dec":1980,"sel":false,"fn":"Roberto"},{"id":1315,"ap":"Schiavi","nombre":"Rolando Schiavi","pos":"DFC","pierna":"D","h":0.974,"pj":253,"gol":27,"pen":5,"tit":15.7,"k":{"n":6,"g":5,"s":{"P1":[4,3],"P2":[1,1],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":6},"gk":false,"org":"Argentinos Juniors","alt":1.91,"pais":"Argentina","deb":2001,"ult":2012,"dec":2000,"sel":true,"fn":"Rolando"},{"id":1182,"ap":"Da Silva","nombre":"Rubén Da Silva","pos":"DC","pierna":"D","h":0.506,"pj":65,"gol":13,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Danubio (Uru)","alt":1.71,"pais":"Uruguay","deb":1993,"ult":1995,"dec":1990,"sel":false,"fn":"Rubén"},{"id":1480,"ap":"Silva","nombre":"Santiago Silva","pos":"DC","pierna":"D","h":0.655,"pj":55,"gol":19,"pen":4,"tit":1.0,"k":{"n":2,"g":2,"s":{"P1":[1,1],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Central Español","alt":1.85,"pais":"Uruguay","deb":2012,"ult":2013,"dec":2010,"sel":true,"fn":"Santiago"},{"id":1550,"ap":"Vergini","nombre":"Santiago Vergini","pos":"DFD","pierna":"D","h":0.464,"pj":44,"gol":0,"pen":0,"tit":2.6,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":1.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Vélez Sarsfield","alt":1.91,"pais":"Argentina","deb":2016,"ult":2018,"dec":2010,"sel":false,"fn":"Santiago"},{"id":1279,"ap":"Battaglia","nombre":"Sebastián Battaglia","pos":"MCD","pierna":"D","h":0.89,"pj":315,"gol":24,"pen":0,"tit":25.6,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":1998,"ult":2011,"dec":2000,"sel":true,"fn":"Sebastián"},{"id":1574,"ap":"Villa","nombre":"Sebastián Villa","pos":"EXT","pierna":"D","h":0.925,"pj":193,"gol":30,"pen":3,"tit":7.6,"k":{"n":8,"g":5,"s":{"P1":[0,0],"P2":[5,4],"M":[3,1]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.4,"out":0,"tandas":8},"gk":false,"org":"Deportes Tolima","alt":1.79,"pais":"Colombia","deb":2018,"ult":2026,"dec":2020,"sel":true,"fn":"Sebastián"},{"id":1443,"ap":"Araujo","nombre":"Sergio Araujo","pos":"DC","pierna":"D","h":0.431,"pj":24,"gol":2,"pen":0,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.8,"pais":"Argentina","deb":2009,"ult":2012,"dec":2010,"sel":false,"fn":"Sergio"},{"id":1177,"ap":"Martínez","nombre":"Sergio Martínez","pos":"DC","pierna":"D","h":0.864,"pj":167,"gol":86,"pen":15,"tit":2.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Defensor Sporting","alt":1.77,"pais":"Uruguay","deb":1992,"ult":1997,"dec":1990,"sel":false,"fn":"Sergio"},{"id":1196,"ap":"Rudman","nombre":"Silvio Rudman","pos":"MCO","pierna":null,"h":null,"pj":12,"gol":1,"pen":1,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Argentinos Juniors","alt":1.87,"pais":"Argentina","deb":1994,"ult":1994,"dec":1990,"sel":false,"fn":"Silvio"},{"id":1683,"ap":"Aranda","nombre":"Tomás Aranda","pos":"MC","pierna":"D","h":0.311,"pj":31,"gol":1,"pen":0,"tit":0.0,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[0,0],"M":[1,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.72,"pais":"Argentina","deb":2026,"ult":2026,"dec":2020,"sel":false,"fn":"Tomás"},{"id":1631,"ap":"Barco","nombre":"Valentín Barco","pos":"LI","pierna":"I","h":0.371,"pj":36,"gol":2,"pen":0,"tit":0.0,"k":{"n":1,"g":1,"s":{"P1":[1,1],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":1,"defmiss":0,"dw":2.2,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Inferiores","alt":1.72,"pais":"Argentina","deb":2021,"ult":2023,"dec":2020,"sel":true,"fn":"Valentín"},{"id":871,"ap":"Pernía","nombre":"Vicente Pernía","pos":"LD","pierna":null,"h":0.862,"pj":268,"gol":10,"pen":0,"tit":12.3,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[1,1]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Estudiantes (LP)","alt":null,"pais":"Argentina","deb":1973,"ult":1981,"dec":1970,"sel":false,"fn":"Vicente"},{"id":1132,"ap":"Marchesini","nombre":"Víctor Marchesini","pos":"DFC","pierna":null,"h":0.696,"pj":103,"gol":3,"pen":0,"tit":5.2,"k":{"n":1,"g":1,"s":{"P1":[0,0],"P2":[1,1],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":1},"gk":false,"org":"Ferro","alt":null,"pais":"Argentina","deb":1989,"ult":1993,"dec":1990,"sel":false,"fn":"Víctor"},{"id":1117,"ap":"Perazzo","nombre":"Walter Perazzo","pos":"DC","pierna":null,"h":0.659,"pj":66,"gol":14,"pen":1,"tit":1.2,"k":{"n":6,"g":4,"s":{"P1":[1,0],"P2":[0,0],"M":[1,0]},"abre":[3,2],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":6},"gk":false,"org":"San Lorenzo","alt":null,"pais":"Colombia","deb":1988,"ult":1990,"dec":1980,"sel":false,"fn":"Walter"},{"id":1113,"ap":"Pico","nombre":"Walter Pico","pos":"SD","pierna":null,"h":0.769,"pj":195,"gol":26,"pen":0,"tit":2.3,"k":{"n":1,"g":0,"s":{"P1":[0,0],"P2":[1,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":1,"dw":0.0,"mw":1.62,"out":1,"tandas":1},"gk":false,"org":"Inferiores","alt":null,"pais":"Argentina","deb":1988,"ult":1996,"dec":1990,"sel":false,"fn":"Walter"},{"id":1677,"ap":"Alarcón","nombre":"Williams Alarcón","pos":"MC","pierna":"D","h":0.297,"pj":39,"gol":0,"pen":0,"tit":0.0,"k":{"n":2,"g":2,"s":{"P1":[0,0],"P2":[0,0],"M":[0,0]},"abre":[0,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Colo Colo","alt":1.82,"pais":"Chile","deb":2025,"ult":2026,"dec":2020,"sel":true,"fn":"Williams"},{"id":1634,"ap":"Romero","nombre":"Óscar Romero","pos":"MCO","pierna":"I","h":0.616,"pj":65,"gol":4,"pen":0,"tit":3.3,"k":{"n":2,"g":1,"s":{"P1":[0,0],"P2":[0,0],"M":[2,1]},"abre":[1,0],"define":0,"defmiss":0,"dw":0.0,"mw":0.0,"out":0,"tandas":2},"gk":false,"org":"Cerro Porteño (Par)","alt":1.76,"pais":"Paraguay","deb":2022,"ult":2023,"dec":2020,"sel":true,"fn":"Óscar"}];
+</script>
+<script>
+(function(){
+'use strict';
+const E = window.Engine;
+E.calibrate(PLAYERS);
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NAMES = ['Azul', 'Oro'];
+const DRAFT_SEC = 12, SHOT_SEC = 15;
+const ONLINE = !!window.ONLINE_ENABLED;
+const SALA = (new URLSearchParams(location.search).get('sala')||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,5);
+const POS = {ARQ:'Arquero',DFC:'Central',DFI:'Lateral izq.',DFD:'Lateral der.',LI:'Lateral izq.',LD:'Lateral der.',MC:'Volante',MCD:'Volante def.',MCO:'Volante of.',MI:'Volante izq.',MD:'Volante der.',ENG:'Enganche',ED:'Extremo der.',EI:'Extremo izq.',EXT:'Extremo',DC:'Delantero',SD:'Segundo delantero'};
+const TYPE_INFO = {
+  normal:{n:'Normal',d:'Colocada. Pocas chances de errar.',r:1},
+  fuerte:{n:'Fuerte',d:'Arriesga más, pero si el arquero adivina el lado igual lo desborda.',r:2},
+  picada:{n:'Picada',d:'Muy arriesgada. Si entra sube la moral del próximo pateador. Si falla, la baja un poco.',r:3}
+};
+const SIDE_N = {L:'Izquierda',C:'Medio',R:'Derecha'};
+
+let S = null;
+const load = () => { try { return JSON.parse(localStorage.getItem('tp_prefs')||'{}'); } catch(e){ return {}; } };
+const save = p => { try { localStorage.setItem('tp_prefs', JSON.stringify(p)); } catch(e){} };
+const prefs = Object.assign({diff:'normal', informed:true, mode:'libre', draft:'veto', lot:30, name:''}, load());
+
+function newGame(){
+  const seed = (Date.now() ^ (Math.random()*1e9)) >>> 0;
+  S = { screen:'toss', seed, rng:E.mulberry32(seed), diff:prefs.diff, informed:prefs.informed, draft:null, dmode:prefs.draft, au:null, mode:prefs.mode, online:false, order:[], sh:null, feed:[], sel:{type:'normal'}, pk:null, busy:false, rec:null, tick:null, timeLeft:60 };
+  S.tossWinner = S.rng() < .5 ? 0 : 1;
+  S.coinFace = S.rng() < .5 ? 'CARA' : 'CRUZ';
+  render();
+}
+
+/* ---------- Utilidades de vista ---------- */
+function sideBars(p, gk){
+  let v;
+  if (gk){ if(!p.a) return ''; v = p.a.dive; } else { if(!p.k) return ''; v = p.k.s; var raw = v; v = {P1:raw.P1[0],P2:raw.P2[0],M:raw.M[0]}; }
+  const tot = v.P1+v.P2+v.M; if(!tot) return '';
+  // Se traduce a lados físicos según la pierna
+  const out = {L:0,C:0,R:0};
+  for (const d of ['P1','P2','M']) out[E.physSide(p,d)] += v[d];
+  const pc = x => Math.round(100*x/tot);
+  return `<div class="bars l" title="${gk?'Hacia dónde se tira':'Hacia dónde patea'} (n=${tot})"><span>Izq ${pc(out.L)}%</span><span>Med ${pc(out.C)}%</span><span>Der ${pc(out.R)}%</span></div>`;
+}
+function cardInner(p, informed){
+  const perks = E.perksOf(p);
+  const chips = (p.gk?'<span class="chip gk">Arquero</span>':'') + perks.map(k=>`<span class="chip ${k.tone}" title="${esc(k.desc)}">${esc(k.label)}</span>`).join('');
+  let st = '';
+  if (informed){
+    if (p.gk && p.a) st = `<div class="stat">Enfrentó ${p.a.n} penales, atajó ${p.a.sv}</div>`+sideBars(p,true);
+    else if (p.k) st = `<div class="stat">Tandas: pateó ${p.k.n}, convirtió ${p.k.g} (${Math.round(100*p.k.g/p.k.n)}%)</div>`+sideBars(p,false);
+    if (!p.gk && p.pen) st += `<div class="stat">Penales en partidos: ${p.pen} convertidos</div>`;
+    if (p.h!=null) st += `<div class="stat">Jerarquía histórica: ${Math.round(p.h*99)}</div>`;
+  } else st = '<div class="blind">A ciegas: sin estadísticas</div>';
+  return `<div class="ov">${informed?E.ovr(p):'?'}<small>NIVEL</small></div><div class="nm">${esc(p.nombre)}</div><div class="ps">${esc(POS[p.pos]||p.pos)}${p.pierna==='I'?' · zurdo':''}</div>${chips?`<div class="chips">${chips}</div>`:''}${st}`;
+}
+
+/* ---------- Pantallas ---------- */
+function render(){
+  clearInterval(S && S.tick); clearInterval(S && S.atick);
+  const top = `<div class="topbar"><div class="brand">Tanda de <b>Penales</b></div><span class="tag">${S&&S.online?'Online':'Prototipo'}</span></div><div id="notice" class="notice">${S&&S.online?(S.notice||olOffText()):(HOMEMSG||'')}</div>`;
+  if (!S) { app.innerHTML = top + home(); bindHome(); return; }
+  const f = {toss:toss, draft:draft, order:orderScr, match:match, end:endScr, ollobby:olLobby, oltoss:olToss}[S.screen];
+  app.innerHTML = top + f();
+  ({toss:bindToss, draft:bindDraft, order:bindOrder, match:bindMatch, end:bindEnd, ollobby:bindOlLobby, oltoss:bindOlToss}[S.screen])();
+  if (S.screen==='match' && !S.rec && !S.busy){ if (S.online){ if(S.ol.deadline) startTimerUntil(S.ol.deadline); } else startTimer(SHOT_SEC, autoShot); }
+}
+
+/* HOME */
+const DR_INFO = {
+  clasico:'Salen 3 jugadores por vez: uno elige 1 y el otro se lleva 2.',
+  veto:'Salen 4 cartas por ronda. El rival veta 1, elegís entre las que quedan y cada jugador tiene un precio: 32 fichas para todo el equipo.',
+  subasta:'Un jugador por vez, con pistas que se van revelando. Todos los de campo comparten un rasgo oculto: descubrilo. 100 fichas para todo el equipo.'
+};
+function rulesDraft(){
+  if (prefs.draft==='veto') return `<li><b>Draft con veto y fichas.</b> En cada ronda salen 4 cartas. Quien no elige primero veta 1 (sale del juego; los arqueros son inmunes). Después elige 1 el primero y luego 1 el otro. La que sobra pasa a la ronda siguiente, con los roles invertidos. Cada jugador cuesta fichas según su nivel y el tope del equipo es 32: una estrella te deja sin plata para el resto. Tenés 12 segundos por acción.</li>`;
+  if (prefs.draft==='subasta') return `<li><b>Subasta ciega.</b> Se subastan 12 jugadores de a uno, ${prefs.lot} segundos cada uno. Las pistas se revelan en este orden: puesto y época, partidos en Boca, nombre, perks y nivel. Gana la oferta más alta cuando termina el reloj o cuando el rival se retira. Una oferta en los últimos 3 segundos suma 5. Tenés 100 fichas para 6 jugadores (5 de campo y 1 arquero), y siempre te tiene que quedar 1 por casillero libre. Los 10 de campo comparten un rasgo oculto que te ayuda a deducir lo que todavía no se reveló.</li>`;
+  return `<li><b>Sorteo y draft.</b> Salen 3 jugadores por vez. Uno elige 1 y el otro se lleva 2, y así hasta formar equipos de 5 de campo y 1 arquero. Tenés 12 segundos por elección: si se acaba, elige el azar.</li>`;
+}
+function homeHTML(){ return `<div class="topbar"><div class="brand">Tanda de <b>Penales</b></div><span class="tag">Prototipo</span></div><div id="notice" class="notice">${HOMEMSG||''}</div>`+home(); }
+function reHome(){ app.innerHTML=homeHTML(); bindHome(); }
+function home(){
+  return `<section class="hero"><h1>Tanda de <span>penales</span></h1>
+  <p>Armás tu equipo con leyendas de Boca que patearon o atajaron en tandas reales. Después, a definir desde los doce pasos.</p></section>
+  ${salaBanner()}<div class="modes">
+    <div class="card mode"><h3>Jugar contra la IA</h3>
+      <div class="small muted">Formato del draft</div>
+      <div class="seg" role="group" aria-label="Formato del draft">${[['clasico','Clásico'],['veto','Veto + fichas'],['subasta','Subasta ciega']].map(([d,l])=>`<button data-dr="${d}" aria-pressed="${prefs.draft===d}">${l}</button>`).join('')}</div>
+      <div class="small muted">${DR_INFO[prefs.draft]}</div>
+      ${prefs.draft==='subasta'?`<div class="small muted">Duración de cada lote</div><div class="seg" role="group" aria-label="Duración del lote">${[[30,'30 segundos'],[60,'60 segundos']].map(([v,l])=>`<button data-lot="${v}" aria-pressed="${prefs.lot===v}">${l}</button>`).join('')}</div>`:''}
+      <div class="small muted">Dificultad de la IA</div>
+      <div class="seg" role="group" aria-label="Dificultad">${['facil','normal','dificil'].map(d=>`<button data-diff="${d}" aria-pressed="${prefs.diff===d}">${{facil:'Fácil',normal:'Normal',dificil:'Difícil'}[d]}</button>`).join('')}</div>
+      <div class="small muted">Puntería</div>
+      <div class="seg" role="group" aria-label="Puntería">${[['libre','Punto libre'],['zonas','9 zonas']].map(([m,l])=>`<button data-mode="${m}" aria-pressed="${prefs.mode===m}">${l}</button>`).join('')}</div>
+      ${prefs.draft==='subasta'?'':`<label class="switch"><input type="checkbox" id="inf" ${prefs.informed?'checked':''}> <span>Mostrar estadísticas en el draft</span></label>`}
+      <button class="btn" id="go">Empezar</button></div>
+    ${onlineCard()}
+  </div>
+  <div class="card"><h3>Cómo se juega</h3>
+  <ol class="rules">
+   ${rulesDraft()}
+   <li><b>Orden de pateadores.</b> Tenés un minuto. En cada penal tenés 15 segundos. ${prefs.draft==='subasta'?'En la tanda patea primero quien eligió patear primero en el sorteo.':'Empieza pateando quien eligió segundo.'}</li>
+   <li><b>Cada penal.</b> El pateador elige un punto del arco (o una de 9 zonas) y cómo pegarle: normal, fuerte o picada. El arquero elige su zona de tiro. Cuanto más cerca del palo, más difícil de atajar y más fácil de errar.</li>
+   <li><b>Empate.</b> Si siguen igualados tras los cinco, patean los arqueros. Si todavía no se define, muerte súbita con el mismo orden.</li>
+  </ol></div>`;
+}
+function bindHome(){
+  document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{prefs.draft=b.dataset.dr;save(prefs);reHome();});
+  document.querySelectorAll('[data-lot]').forEach(b=>b.onclick=()=>{prefs.lot=+b.dataset.lot;save(prefs);reHome();});
+  document.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{prefs.diff=b.dataset.diff;save(prefs);reHome();});
+  document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{prefs.mode=b.dataset.mode;save(prefs);reHome();});
+  const inf=$('#inf'); if(inf) inf.onchange=e=>{prefs.informed=e.target.checked;save(prefs);};
+  $('#go').onclick=()=>newGame();
+  olHomeBind();
+}
+
+/* SORTEO */
+function toss(){
+  const w = S.tossWinner, coin=`<div class="coin">${S.coinFace==='CARA'?'C':'X'}</div>`;
+  if (w===0){
+    if (S.dmode==='subasta') return `<div class="final">${coin}<h2>Ganaste el sorteo</h2>
+    <p class="muted">Salió ${S.coinFace.toLowerCase()}. Elegí si querés patear primero o segundo en la tanda. Patear primero es una ventaja, pero arrancás la subasta con 5 fichas menos: 95 contra 100.</p>
+    <div class="row" style="justify-content:center"><button class="btn" data-f="0">Patear primero (95 fichas)</button><button class="btn ghost" data-f="1">Patear segundo (100 fichas)</button></div></div>`;
+    const extra = S.dmode==='veto' ? 'Quien elige primero en la ronda 1 (y en las impares) tiene ventaja en el draft, pero patea segundo en la tanda.' : 'Hay una compensación: quien elige segundo patea primero en la tanda.';
+    return `<div class="final">${coin}<h2>Ganaste el sorteo</h2>
+    <p class="muted">Salió ${S.coinFace.toLowerCase()}. Elegí cómo arrancar el draft. ${extra}</p>
+    <div class="row" style="justify-content:center"><button class="btn" data-f="0">${S.dmode==='veto'?'Elegir primero':'Elegir primero (1 jugador)'}</button><button class="btn ghost" data-f="1">${S.dmode==='veto'?'Elegir segundo':'Elegir segundo (2 jugadores)'}</button></div></div>`;
+  }
+  return `<div class="final">${coin}<h2>Ganó el sorteo la IA</h2><p class="muted" id="aiTxt">Está decidiendo...</p></div>`;
+}
+function bindToss(){
+  const go = F => {
+    if (S.dmode==='subasta'){ auBegin(F===0?0:1); return; }
+    S.draft = S.dmode==='veto' ? E.vtStart(E.vtNew(PLAYERS,S.rng),F) : E.startDraft(E.newDraft(PLAYERS,S.rng), F);
+    S.F=F; S.screen='draft'; render(); draftTick();
+  };
+  if (S.tossWinner===0) document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{
+    // en subasta, data-f=0 significa "yo pateo primero"; el motor usa S = el que patea primero
+    if (S.dmode==='subasta') auBegin(+b.dataset.f===0?0:1); else go(+b.dataset.f);
+  });
+  else { const aiFirst = S.rng()<.5; setTimeout(()=>{
+      const msg = S.dmode==='subasta' ? (aiFirst?'La IA elige patear primero (arranca con 95 fichas).':'La IA elige patear segundo (arranca con 100 fichas).') : (aiFirst ? 'La IA elige empezar eligiendo primero.' : 'La IA elige elegir segundo.');
+      $('#aiTxt').textContent = msg;
+      setTimeout(()=>{ if (S.dmode==='subasta') auBegin(aiFirst?1:0); else go(aiFirst?1:0); },1400); },900); }
+}
+
+/* DRAFT */
+function dText(e){
+  const by = S.draft.byId, nm = id=>`<b>${esc(by[id].ap)}</b>`, tn = t=>t===0?'Vos':'La IA';
+  if (e.type==='pick') return `${tn(e.team)} elige a ${nm(e.id)}.`;
+  if (e.type==='rest') return `${tn(e.team)} se queda con ${e.ids.map(nm).join(' y ')}.`;
+  if (e.type==='auto') return `El último, ${e.ids.map(nm).join(', ')}, va para ${tn(e.team).toLowerCase()}.`;
+  return null;
+}
+function roleText(t){
+  const d = S.draft, me = t.team===0, rival = me?'tu rival':'la IA';
+  const st = t.step, F = d.F;
+  if (st===0) return me ? `Ronda 1: elegís 1 jugador. ${cap(rival)} se lleva los otros 2.` : `Ronda 1: elige la IA. Vos te llevás los 2 que queden.`;
+  if (st===1) return t.sub===0 ? (me?'Ronda 2: elegís 1. Después elige el rival y el que sobra queda para la próxima ronda.':'Ronda 2: elige la IA primero.') : (me?'Ronda 2: elegís 1 de los 2 que quedan.':'Ronda 2: elige la IA el segundo.');
+  if (st===2) return me ? 'Ronda 3: elegís 1 y tu rival se lleva los otros 2.' : 'Ronda 3: elige la IA. Vos te llevás los 2 que queden.';
+  return me ? 'Ronda 4: elegís 1 y tu rival se lleva los otros 2. El último jugador del mazo va para vos o para él según el reparto.' : 'Ronda 4: elige la IA. Vos te llevás los 2 que queden.';
+}
+const cap = s => s[0].toUpperCase()+s.slice(1);
+function timerRow(){ return `<div class="row" style="margin:10px 0"><div class="timer" style="flex:1"><i id="tbar2" style="width:100%"></i></div><b id="ttxt2"></b></div>`; }
+function startTimer(sec,onExpire){
+  clearInterval(S.tick); let left=sec;
+  const upd=()=>{ const b=$('#tbar2'),x=$('#ttxt2'); if(b){b.style.width=(left/sec*100)+'%'; b.style.background=left<=3?'var(--bad)':'var(--gold)';} if(x) x.textContent=left+' s'; };
+  upd(); S.tick=setInterval(()=>{ left--; upd(); if(left<=0){ clearInterval(S.tick); onExpire(); } },1000);
+}
+function roster(t){
+  const d = S.draft, ids = d.teams[t]; const rows = ids.map(id=>{const p=d.byId[id];return `<div class="it ${p.gk?'gk':''}"><span>${esc(p.ap)}</span><span class="muted">${p.gk?'ARQ':esc(p.pos)}</span></div>`;});
+  while(rows.length<6) rows.push('<div class="it empty">...</div>');
+  return `<div><h3>${t===0?'Tu equipo (Azul)':'IA (Oro)'}</h3><div class="ros">${rows.join('')}</div></div>`;
+}
+function draft(){
+  if (S.dmode==='veto') return vetoScr();
+  if (S.dmode==='subasta') return auScr();
+  const d = S.draft, t = E.turn(d); if(!t) return `<h2>Equipos listos</h2><p class="muted">Pasamos al orden de pateadores.</p><div class="grid3"><div>${roster(0)}</div><div>${roster(1)}</div></div>`;
+  const legal = new Set(E.legalPicks(d));
+  const mine = t.team===0;
+  const feed = d.log.map(dText).filter(Boolean).slice(-8).reverse().map(x=>`<div>${x}</div>`).join('') || '<div>Todavía no se eligió a nadie.</div>';
+  const cards = t.options.map(id=>{const p=d.byId[id],ok=legal.has(id);
+    return `<button class="pc ${p.gk?'gk':''}" data-id="${id}" ${(!mine||!ok)?'disabled':''} ${mine&&!ok?'title="No disponible: dejaría a un equipo con los 2 arqueros."':''}>${cardInner(p,S.informed)}${mine&&!ok?'<div class="small" style="color:var(--bad)">No disponible: dejaría a un equipo con los 2 arqueros.</div>':''}</button>`;}).join('');
+  return `<h2>Draft</h2><div class="rolebox"><b>${mine?'Te toca':'Elige la IA'}.</b> ${roleText(t)}</div>
+  ${mine?timerRow():''}<div class="draft"><div><div class="grid3" id="cards">${cards}</div><div class="card" style="margin-top:12px"><h3>Mesa</h3><div class="feed">${feed}</div></div></div>
+  <div class="side">${roster(0)}${roster(1)}</div></div>`;
+}
+function bindDraft(){
+  if (S.dmode==='veto') return bindVeto();
+  if (S.dmode==='subasta') return bindAu();
+  document.querySelectorAll('#cards .pc').forEach(b=>b.onclick=()=>{ if(b.disabled) return; S.draft = E.applyPick(S.draft,+b.dataset.id); render(); draftTick(); });
+}
+function draftTick(){
+  if (S.screen!=='draft') return;
+  if (S.dmode==='veto') return vetoTick();
+  if (S.dmode==='subasta') return;
+  const t = E.turn(S.draft);
+  if (!t){ // draft terminado
+    setTimeout(()=>{ startOrder(); },900); render(); return;
+  }
+  if (t.team===0){
+    startTimer(DRAFT_SEC,()=>{ const lp=E.legalPicks(S.draft); S.draft=E.applyPick(S.draft,E.pick(S.rng,lp)); render(); draftTick(); });
+  }
+  if (t.team===1){
+    setTimeout(()=>{
+      const lp = E.legalPicks(S.draft); const rng=S.rng;
+      let id;
+      if (S.diff==='facil' && rng()<.5) id = E.pick(rng, lp);
+      else id = lp.slice().sort((a,b)=>E.ovr(S.draft.byId[b])-E.ovr(S.draft.byId[a]))[0];
+      S.draft = E.applyPick(S.draft,id); render(); draftTick();
+    }, 1100);
+  }
+}
+
+
+/* ---------- DRAFT: VETO + FICHAS ---------- */
+function vtDText(e){
+  const d=S.draft, by=d.byId, nm=id=>`<b>${esc(by[id].ap)}</b>`, tn=t=>t===0?'Vos':'La IA';
+  if (e.type==='veto') return `${tn(e.team)} vetó a ${nm(e.id)}. Sale del juego.`;
+  if (e.type==='pick') return `${tn(e.team)} elige a ${nm(e.id)} por ${e.cost} fichas.`;
+  return null;
+}
+function vtRole(t){
+  const me=t.team===0, first=t.first===0?'Vos':'La IA', head=`Ronda ${t.round+1} de 6. Elige primero: <b>${first}</b>. `;
+  if (t.sub==='veto') return head+(me?'Vetá 1 carta: sale del juego. Los arqueros no se pueden vetar. Después elige 1 el primero de la ronda de las 3 que queden y vos 1 de las 2 restantes.':'La IA está por vetar una carta.');
+  if (t.sub==='p1') return head+(me?'Elegí 1 de las 3 cartas.':'Elige la IA.');
+  return head+(me?'Elegí 1 de las 2 que quedan. La otra pasa a la ronda siguiente.':'Elige la IA entre las 2 que quedan.');
+}
+function vtRoster(t){
+  const d=S.draft, paid={}; d.log.forEach(e=>{ if(e.type==='pick'&&e.team===t) paid[e.id]=e.cost; });
+  const left=d.cap-d.spent[t];
+  const rows=d.teams[t].map(id=>{const p=d.byId[id];return `<div class="it ${p.gk?'gk':''}"><span>${esc(p.ap)}</span><span class="muted">${p.gk?'ARQ':esc(POS[p.pos]||p.pos)} · ${paid[id]} fichas</span></div>`;});
+  while(rows.length<6) rows.push('<div class="it empty">...</div>');
+  return `<div><div class="bud"><div class="t"><b>${t===0?'Tu equipo':'IA'}</b><span>Te quedan <b style="font-size:18px;color:var(--gold)">${left}</b> de ${d.cap}</span></div><div class="timer"><i style="width:${left/d.cap*100}%"></i></div></div><div class="ros">${rows.join('')}</div></div>`;
+}
+function vetoScr(){
+  const d=S.draft, t=E.vtTurn(d);
+  if(!t) return `<h2>Equipos listos</h2><p class="muted">Pasamos al orden de pateadores.</p><div class="grid3"><div>${vtRoster(0)}</div><div>${vtRoster(1)}</div></div>`;
+  const L=new Map(E.vtLegal(d).map(o=>[o.id,o.cost])), mine=t.team===0, veto=t.sub==='veto';
+  const cards=t.options.map(id=>{
+    const p=d.byId[id], ok=L.has(id), price=d.price[id], cost=L.get(id), canClick=mine&&ok;
+    let note='';
+    if (mine&&!ok) note = veto ? 'Inmune al veto' : (p.gk?'Ya tenés arquero':'No tenés cupo para este puesto');
+    const pay = (!veto&&canClick&&cost<price) ? `<div class="small" style="color:var(--gold)">Pagás ${cost}: es lo que te queda.</div>` : '';
+    return `<button class="pc ${p.gk?'gk':''} ${veto&&canClick?'veto':''}" data-id="${id}" ${canClick?'':'disabled'}>${cardInner(p,S.informed)}<div class="pr"><b>${price}</b><small>fichas</small></div>${veto&&canClick?'<div class="vetotag">Tocá para vetar</div>':''}${pay}${note?`<div class="small" style="color:var(--bad)">${note}</div>`:''}</button>`;
+  }).join('');
+  const feed=d.log.map(vtDText).filter(Boolean).slice(-8).reverse().map(x=>`<div>${x}</div>`).join('')||'<div>Todavía no pasó nada.</div>';
+  return `<h2>Draft: veto y fichas</h2><div class="rolebox"><b>${mine?'Te toca':'Juega la IA'}.</b> ${vtRole(t)}</div>
+  ${mine?timerRow():''}<div class="draft"><div><div class="grid2c" id="cards">${cards}</div><div class="card" style="margin-top:12px"><h3>Mesa</h3><div class="feed">${feed}</div></div></div>
+  <div class="side">${vtRoster(0)}${vtRoster(1)}</div></div>`;
+}
+function bindVeto(){
+  document.querySelectorAll('#cards .pc').forEach(b=>b.onclick=()=>{ if(b.disabled) return; S.draft=E.vtApply(S.draft,+b.dataset.id); render(); vetoTick(); });
+}
+function vetoTick(){
+  if (S.screen!=='draft') return;
+  const t=E.vtTurn(S.draft);
+  if(!t){ setTimeout(()=>{ startOrder(); },900); render(); return; }
+  if (t.team===0) startTimer(DRAFT_SEC,()=>{ const L=E.vtLegal(S.draft); S.draft=E.vtApply(S.draft,E.pick(S.rng,L).id); render(); vetoTick(); });
+  else setTimeout(()=>{ if(S.screen!=='draft') return; S.draft=E.vtApply(S.draft,E.vtAI(S.draft,S.rng,S.diff)); render(); vetoTick(); },1200);
+}
+
+/* ---------- DRAFT: SUBASTA CIEGA ---------- */
+const SOLD_MS = 6000;
+function auBegin(kicker){
+  const A=E.auNew(PLAYERS,S.rng,{lotSec:prefs.lot});
+  E.auStart(A,kicker); S.draft=A; S.F=A.F;
+  S.au={A,phase:'lot',ai:null,sig:'',ext:0,guess:''};
+  E.auNext(A,Date.now());
+  if (A.over) S.au.phase='over'; else S.au.ai=E.auAIInit(A,S.rng,S.diff,1);
+  S.screen='draft'; render();
+}
+const tnm = t => t===0?'Vos':RIV();
+function auRoster(t){
+  const A=S.au.A, paid={}; A.log.forEach(e=>{ if(e.team===t) paid[e.id]=e.price; });
+  const rows=A.teams[t].map(id=>{const p=A.byId[id];return `<div class="it ${p.gk?'gk':''}"><span>${esc(p.ap)}</span><span class="muted">${p.gk?'ARQ':esc(POS[p.pos]||p.pos)} · ${paid[id]}</span></div>`;});
+  while(rows.length<6) rows.push('<div class="it empty">...</div>');
+  return `<div class="card"><h3>${t===0?'Tu equipo':RIV()}</h3><div class="bigfi">${A.budget[t]} <span class="small muted" style="font-family:var(--body);font-weight:600">fichas</span></div><div class="small muted" style="margin:4px 0 8px">Podés ofertar hasta ${Math.max(0,E.auMax(A,t))}.</div><div class="ros">${rows.join('')}</div></div>`;
+}
+function auTable(){
+  const A=S.au.A, rows=A.log.map(e=>{const p=A.byId[e.id];
+    return `<tr class="own${e.team}"><td><b>${esc(p.ap)}</b></td><td>${p.gk?'Arquero':esc(POS[p.pos]||p.pos)}</td><td>${p.dec}s</td><td>${p.org==='Inferiores'?'Inferiores':esc(p.org)}</td><td>${p.pierna==='I'?'Zurdo':p.pierna==='D'?'Derecho':'?'}</td><td>${esc(p.pais)}</td><td>${p.alt?p.alt.toFixed(2):'?'}</td><td>${p.sel?'Sí':'No'}</td><td>${e.price}${e.auto?' *':''}</td></tr>`;}).reverse().join('');
+  if(!rows) return '<p class="small muted">Todavía no se vendió nadie. Acá vas a ver todos los datos de cada jugador vendido para detectar el patrón.</p>';
+  return `<div class="scroll"><table class="sold"><thead><tr><th>Jugador</th><th>Puesto</th><th>Época</th><th>Cuna</th><th>Pierna</th><th>Nació en</th><th>Alt.</th><th>Selec.</th><th>Precio</th></tr></thead><tbody>${rows}</tbody></table></div><p class="small muted" style="margin-top:6px">Borde dorado: tuyo. Borde azul: de la IA. * se lo llevó el único que tenía cupo, por 1 ficha.</p>`;
+}
+function cluesHtml(cl){
+  return cl.map(c=>`<div class="clue k-${c.k} ${c.shown?'on':''}"><span class="cl">${c.label}</span><span class="cv">${c.shown?esc(c.text):'···'}</span></div>`).join('');
+}
+function bidHtml(){
+  const a=S.au, A=a.A, c=A.cur, max=Math.max(0,E.auMax(A,0)), base=c.bid;
+  const lead = c.leader===null ? '—' : tnm(c.leader);
+  let btns='';
+  if (c.leader===0) btns=`<div class="small" style="color:var(--good)">Vas ganando con ${c.bid} fichas. Si ${RIVl()} no responde antes de que termine el reloj, es tuyo.</div>`;
+  else {
+    const set=[1,3,5,10].map(i=>base+i).filter(v=>v<=max);
+    if (max>base && !set.includes(max)) set.push(max);
+    btns=set.map(v=>`<button class="btn ${v===max&&set.length>1&&v!==base+1?'ghost':''}" data-bid="${v}">${v===max&&v>base+10?'Todo: ':'Ofertar '}${v}</button>`).join('')
+      + (c.bid===0 ? `<button class="btn ghost" id="aDrop" title="Se lo lleva el rival por 1 ficha">Darme de baja</button>` : `<button class="btn ghost" id="aPass">Retirarme</button>`);
+    if (!set.length) btns=`<div class="small muted">No te alcanzan las fichas para superar la oferta.</div><button class="btn ghost" id="aPass">Retirarme</button>`;
+    if (c.bid===0) btns+=`<div class="small muted" style="flex-basis:100%">Si te das de baja, el lote se cierra ya y se lo lleva ${RIVl()} por 1 ficha.</div>`;
+  }
+  return `<div class="bidrow"><div><small>Oferta actual</small><b>${c.bid?c.bid:'—'}</b></div><div><small>Lidera</small><b class="${c.leader===0?'me':''}">${lead}</b></div><div><small>Tu tope</small><b>${max}</b></div></div><div class="row">${btns}</div>`;
+}
+function lotInner(){
+  const a=S.au, A=a.A;
+  if (a.phase==='sold'){
+    const e=A.log[A.log.length-1], p=A.byId[e.id];
+    const how = e.nobids ? `Nadie ofreció: el sorteo lo ganó ${tnm(e.team).toLowerCase()} y lo paga 1 ficha.` : `${tnm(e.team)} se lleva a <b>${esc(p.nombre)}</b> por <b>${e.price}</b> fichas.`;
+    const verdict = e.nobids ? '' : (e.price<=e.fair*0.9?'Buen negocio.':e.price>=e.fair*1.15?'Se pagó de más.':'Precio de mercado.');
+    return `<h3>Vendido</h3><p>${how}</p><p class="small muted">Valor de mercado: unas ${Math.round(e.fair)} fichas. ${verdict}</p><div class="grid2c" style="margin:10px 0"><div class="pc ${p.gk?'gk':''}">${cardInner(p,true)}</div></div><div class="row">${S.online?'':'<button class="btn" id="aSkip">Siguiente lote</button>'}<span class="muted">Sigue solo en <b id="aSoldT"></b></span></div>`;
+  }
+  const c=A.cur;
+  return `<div class="row" style="justify-content:space-between"><h3>Lote ${A.lot+1}: jugador a subasta</h3><div><span class="bigt" id="aTtxt"></span><span class="ext" id="aExt"></span></div></div>
+  <div class="timer" style="margin:8px 0 12px"><i id="aBar" style="width:100%;transition:none"></i></div>
+  <div id="aClues"></div><div class="small muted" id="aNext" style="margin:4px 0 8px"></div><div id="aBid"></div>`;
+}
+function auOver(){
+  const a=S.au, A=a.A, th=A.theme, g=a.guess, ok=g===th.id;
+  const gtxt = !g ? 'No anotaste ninguna sospecha.' : ok ? '¡Lo adivinaste!' : `Anotaste "${esc(E.THEMES.find(x=>x.id===g).name)}". Casi.`;
+  return `<h2>Subasta terminada</h2><div class="card" style="margin:12px 0"><h3>El patrón era</h3><p style="font-size:20px;margin:6px 0"><b>${esc(th.name)}</b></p><p class="muted">${A.wildGK?'Los dos arqueros no seguían el patrón: no alcanzaban arqueros con ese rasgo.':'Los arqueros también lo cumplían.'} ${gtxt}</p></div>
+  <div class="grid3"><div>${auRoster(0)}</div><div>${auRoster(1)}</div><div class="card"><h3>Todos los lotes</h3>${auTable()}</div></div>
+  <div class="row" style="margin-top:14px"><button class="btn" id="aGo" ${S.online&&S.au.ready&&S.au.ready[0]?'disabled':''}>${S.online&&S.au.ready&&S.au.ready[0]?'Esperando a tu rival...':'Ir al orden de pateadores'}</button></div>`;
+}
+function auScr(){
+  const a=S.au, A=a.A;
+  if (a.phase==='over') return auOver();
+  const opts=E.THEMES.map(t=>`<option value="${t.id}" ${a.guess===t.id?'selected':''}>${esc(t.name)}</option>`).join('');
+  return `<h2>Subasta ciega</h2><div class="rolebox"><b>Lote ${A.lot+1} de ${A.lots.length}.</b> Los 10 jugadores de campo tienen algo en común. Las pistas aparecen en orden (puesto y época, En Boca, nombre, perks, nivel), y cada jugador vendido queda en la tabla con todos sus datos para que descubras el patrón. Una oferta en los últimos 3 segundos suma 5 segundos.</div>
+  <div class="draft"><div><div class="card" id="lotCard">${lotInner()}</div><div class="card" style="margin-top:12px"><h3>Vendidos</h3>${auTable()}</div></div>
+  <div class="side">${auRoster(0)}${auRoster(1)}<div class="card"><h3>Tu sospecha</h3><p class="small muted">No cambia el juego. Al final te decimos si acertaste.</p><select id="guess" aria-label="Tu sospecha del patrón"><option value="">Todavía no sé</option>${opts}</select></div></div></div>`;
+}
+function auLive(now){
+  const a=S.au, A=a.A, c=A.cur; if(!c||a.phase!=='lot') return;
+  const rem=Math.max(0,c.end-now), tot=A.lotSec*1000, bar=$('#aBar'), tx=$('#aTtxt');
+  if(bar){ bar.style.width=Math.min(100,rem/tot*100)+'%'; bar.style.background=rem<=3000?'var(--bad)':'var(--gold)'; }
+  if(tx){ tx.textContent=Math.ceil(rem/1000)+' s'; tx.style.color=rem<=3000?'var(--bad)':''; }
+  const tSec=(now-c.start)/1000, cl=S.online?c.clues:E.auClues(A,c.id,tSec), shown=cl.filter(x=>x.shown).length;
+  const sig=[shown,c.bid,c.leader,c.done[0],E.auMax(A,0)].join('|');
+  if (sig!==a.sig){
+    a.sig=sig; $('#aClues').innerHTML=cluesHtml(cl); $('#aBid').innerHTML=bidHtml(); bindBid();
+  }
+  if (c.ext!==a.ext){ a.ext=c.ext; const x=$('#aExt'); if(x){ x.textContent='+5 s'; setTimeout(()=>{ const y=$('#aExt'); if(y) y.textContent=''; },1500); } }
+  const nx=cl.find(x=>!x.shown), nn=$('#aNext'); if(nn) nn.textContent = nx ? `Próxima pista (${nx.label.toLowerCase()}) en ${Math.ceil(nx.at-tSec)} s.` : 'Ya se revelaron todas las pistas.';
+}
+function bindBid(){
+  document.querySelectorAll('[data-bid]').forEach(b=>b.onclick=()=>{ if(S.online){ olSend({t:'bid',amount:+b.dataset.bid}); return; } E.auBid(S.au.A,0,+b.dataset.bid,Date.now()); S.au.sig=''; auLive(Date.now()); });
+  const dr=$('#aDrop'); if(dr) dr.onclick=()=>{ if(S.online){ olSend({t:'drop'}); return; } E.auDrop(S.au.A,0); S.au.sig=''; auLive(Date.now()); };
+  const p=$('#aPass'); if(p) p.onclick=()=>{ if(S.online){ olSend({t:'pass'}); return; } E.auPass(S.au.A,0); S.au.sig=''; auLive(Date.now()); };
+}
+function auAdvance(){
+  const a=S.au, A=a.A, now=Date.now();
+  E.auNext(A,now);
+  if (A.over){ a.phase='over'; S.draft=A; } else { a.phase='lot'; a.ai=E.auAIInit(A,S.rng,S.diff,1); a.sig=''; a.ext=0; }
+  render();
+}
+function auLoop(){
+  const a=S.au; if(!a||S.screen!=='draft'||S.dmode!=='subasta'){ clearInterval(S&&S.atick); return; }
+  if (S.online){ if(a.phase==='lot') auLive(sNow()); else if(a.phase==='sold'){ const x=$('#aSoldT'); if(x) x.textContent=Math.max(0,Math.ceil((a.until-sNow())/1000))+' s'; } return; }
+  const A=a.A, now=Date.now();
+  if (a.phase==='lot'){
+    const act=E.auAIStep(A,a.ai,now);
+    if (act){ if(act.type==='bid') E.auBid(A,1,act.amount,now); else E.auPass(A,1); }
+    const ev=E.auTick(A,now);
+    if (ev.length){ a.phase='sold'; a.soldUntil=now+SOLD_MS; render(); return; }
+    auLive(now);
+  } else if (a.phase==='sold'){
+    const left=Math.max(0,a.soldUntil-now), x=$('#aSoldT'); if(x) x.textContent=Math.ceil(left/1000)+' s';
+    if (left<=0) auAdvance();
+  }
+}
+function bindAu(){
+  const a=S.au; if(!a) return;
+  const g=$('#guess'); if(g) g.onchange=e=>{ a.guess=e.target.value; };
+  if (a.phase==='over'){ $('#aGo').onclick=()=>{ if(S.online){ olSend({t:'ready'}); a.ready[0]=true; const g=$('#aGo'); g.disabled=true; g.textContent='Esperando a tu rival...'; } else startOrder(); }; return; }
+  if (a.phase==='sold'){ const sk=$('#aSkip'); if(sk) sk.onclick=()=>auAdvance(); }
+  a.sig=''; auLoop(); S.atick=setInterval(auLoop,200);
+}
+
+/* ORDEN */
+function startOrder(){
+  const d=S.draft;
+  S.myTeam = d.teams[0].map(id=>d.byId[id]);
+  S.gkMe = S.myTeam.find(p=>p.gk);
+  S.order = E.aiOrder(S.myTeam.filter(p=>!p.gk)).map(p=>p.id);
+  S.timeLeft = S.online ? Math.max(5,Math.min(60,Math.round((S.ol.orderDeadline-sNow()-2500)/1000))) : 60; S.orderSent=false; S.screen='order'; render();
+  S.tick = setInterval(()=>{ S.timeLeft--; const bar=$('#tbar'), tx=$('#ttxt'); if(bar){bar.style.width=(S.timeLeft/60*100)+'%'; tx.textContent=S.timeLeft+' s';} if(S.timeLeft<=0){ clearInterval(S.tick); if(S.online) olSendOrder(); else beginMatch(); } },1000);
+}
+function orderScr(){
+  const by = S.draft.byId;
+  const first = S.draft.S===0 ? 'Vos' : RIV();
+  if (S.orderSent) return `<h2>Orden de pateadores</h2><p class="muted">Tu orden está confirmado. Esperando a ${RIVl()}...</p>`;
+  const items = S.order.map((id,i)=>{const p=by[id];return `<div class="it"><div class="n">${i+1}</div><div><b>${esc(p.nombre)}</b> <span class="muted small">· ${esc(POS[p.pos]||p.pos)}</span><div class="chips" style="margin-top:4px">${E.perksOf(p).map(k=>`<span class="chip ${k.tone}" title="${esc(k.desc)}">${esc(k.label)}</span>`).join('')}${S.informed&&p.k?`<span class="stat">Pateó ${p.k.n}, ${p.k.g} goles</span>`:''}</div></div><div class="mv"><button data-up="${i}" ${i===0?'disabled':''} aria-label="Subir">▲</button><button data-dn="${i}" ${i===4?'disabled':''} aria-label="Bajar">▼</button></div></div>`;}).join('');
+  return `<h2>Orden de pateadores</h2><p class="muted">Arquero de tu equipo: <b>${esc(S.gkMe.nombre)}</b>. Solo patea si hay empate tras los cinco. En la tanda patea primero: <b>${first}</b>.</p>
+  <div class="row" style="margin:10px 0"><div class="timer" style="flex:1"><i id="tbar" style="width:${S.timeLeft/60*100}%"></i></div><b id="ttxt">${S.timeLeft} s</b></div>
+  <div class="ord">${items}</div><div class="row" style="margin-top:14px"><button class="btn" id="ok">Confirmar orden</button><button class="btn ghost" id="sug">Orden sugerido</button></div>`;
+}
+function bindOrder(){
+  if (S.orderSent) return;
+  document.querySelectorAll('[data-up]').forEach(b=>b.onclick=()=>{const i=+b.dataset.up;[S.order[i-1],S.order[i]]=[S.order[i],S.order[i-1]];keepTimer();});
+  document.querySelectorAll('[data-dn]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dn;[S.order[i+1],S.order[i]]=[S.order[i],S.order[i+1]];keepTimer();});
+  $('#sug').onclick=()=>{S.order=E.aiOrder(S.myTeam.filter(p=>!p.gk)).map(p=>p.id);keepTimer();};
+  $('#ok').onclick=()=>{ if(S.online) olSendOrder(); else {clearInterval(S.tick);beginMatch();} };
+}
+function keepTimer(){ const t=S.tick; app.innerHTML=`<div class="topbar"><div class="brand">Tanda de <b>Penales</b></div><span class="tag">Prototipo</span></div>`+orderScr(); S.tick=t; bindOrder(); }
+
+/* PARTIDO */
+function beginMatch(){
+  const d=S.draft, by=d.byId;
+  const mk = (t,ord)=>{const ps=d.teams[t].map(id=>by[id]);return {name:NAMES[t],gk:ps.find(p=>p.gk),order:ord||E.aiOrder(ps.filter(p=>!p.gk))};};
+  const teams=[mk(0,S.order.map(id=>by[id])), mk(1)];
+  S.teams=teams;
+  S.sh = new E.Shootout(teams, d.S, S.rng, {mode:S.mode});
+  S.feed=[{c:'sys',t:`Empieza la tanda. Patea primero ${d.S===0?'Azul (vos)':'Oro (la IA)'}.`}];
+  S.screen='match'; S.rec=null; S.pk=S.sh.peek(); resetSel(); pushPre(); render();
+}
+function autoShot(){
+  const pk=S.pk, r=S.rng;
+  if (pk.team===0){
+    if(!S.sel.aim){ if(S.mode==='zonas'){ const i=Math.floor(r()*9), z=E.ZONES[i]; S.sel.aim={x:z.x,y:z.y,zone:i}; } else S.sel.aim={x:(r()<.5?-1:1)*(.8+r()*1.8), y:.5+r()*1.3}; }
+  } else if (S.sel.dive==null) S.sel.dive=Math.floor(r()*9);
+  S.feed.push({c:'sys',t:'Se acabó el tiempo.'}); fire();
+}
+function resetSel(){ S.sel={type:'normal',aim:null,dive:null}; }
+function pushPre(){ S.feed.push({c:'pre',t:E.narratePre(S.rng,S.pk)}); }
+function board(){
+  const sh=S.sh;
+  const dots = t=>{
+    const res=sh.log.filter(r=>r.pk.team===t&&r.pk.phase==='reg').map(r=>r.result==='goal'?'g':'m');
+    const cur = S.pk && S.pk.team===t && S.pk.phase==='reg' && !S.rec ? res.length : -1;
+    let h=''; for(let i=0;i<5;i++){ const k=res[i]; h+=`<div class="dot ${k||''} ${i===cur?'cur':''}">${k==='g'?'✓':k==='m'?'✕':''}</div>`; }
+    const extra=sh.log.filter(r=>r.pk.team===t&&r.pk.phase!=='reg').map(r=>r.result==='goal'?'g':'m');
+    extra.forEach(k=>h+=`<div class="dot ${k}">${k==='g'?'✓':'✕'}</div>`);
+    return `<div class="dots">${h}</div>`;
+  };
+  const ph = sh.phase==='reg'?'Mejor de 5':sh.phase==='gk'?'Patean los arqueros':'Muerte súbita';
+  return `<div class="board"><div class="tm"><div class="tn me">${S.online?esc(S.myName)+' · vos':'Azul · vos'}</div>${dots(0)}</div><div class="score">${sh.sc[0]} - ${sh.sc[1]}<small>${ph.toUpperCase()}</small></div><div class="tm r"><div class="tn">${S.online?esc(S.rivalName):'Oro · IA'}</div>${dots(1)}</div></div>`;
+}
+const PX=E.PX, SX=x=>300+x*PX, SY=y=>260-y*PX;
+function targets(rec){
+  const dv=E.DIVES[rec.dive];
+  const keeper=`transform:translate(${dv.x*PX*0.9}px,${-(dv.y-1.0)*PX*0.8}px) rotate(${Math.max(-1,Math.min(1,dv.x/2.3))*50}deg);transform-origin:300px 200px`;
+  const bx=SX(rec.land.x)-300, by=SY(rec.land.y)-288;
+  const out=rec.result==='wide'; 
+  return {keeper, ball:`transform:translate(${bx}px,${by}px) scale(.62);transform-origin:300px 288px`};
+}
+function reticleSigma(){
+  // círculo de error del pateador (1,5 sigma) según tipo, jugador y lado elegido
+  const pk=S.pk, a=S.sel.aim||{x:0,y:1.2};
+  const m=E.modifiers(pk.kicker,pk.keeper,E.physOf(a.x),S.sh.ctxOf(pk));
+  const g=E.kickParams(S.sel.type,m); return {rx:1.5*g.sx*PX, ry:1.5*g.sy*PX, sx:g.sx};
+}
+function goalSvg(pk, rec){
+  const mineKicks = pk.team===0, free = S.mode==='libre';
+  const canPick = !rec && !S.busy;
+  const showZones = !rec && (!mineKicks || !free);
+  let zones='';
+  if (showZones) for(let r=0;r<3;r++)for(let c=0;c<3;c++){ const i=r*3+c; const sel = mineKicks ? (S.sel.aim&&S.sel.aim.zone===i) : (S.sel.dive===i);
+    zones+=`<rect class="zone ${sel?'sel':''}" data-zone="${i}" x="${60+c*160}" y="${100+(2-r)*160/3}" width="160" height="${160/3}"/>`; }
+  const T = rec ? targets(rec) : {ball:'transform:translate(0,0);transform-origin:300px 288px',keeper:'transform:none;transform-origin:300px 200px'};
+  let marks='';
+  if (rec){
+    marks+=`<circle cx="${SX(rec.kick.x)}" cy="${SY(rec.kick.y)}" r="7" fill="none" stroke="#f4c20d" stroke-width="2.5" stroke-dasharray="3 3"/>`;
+    marks+=`<ellipse cx="${SX(rec.kick.x)}" cy="${SY(rec.kick.y)}" rx="${1.5*rec.sigma.x*PX}" ry="${1.5*rec.sigma.y*PX}" fill="#f4c20d12" stroke="#f4c20d55"/>`;
+    marks+=`<circle cx="${SX(rec.land.x)}" cy="${SY(rec.land.y)}" r="5" fill="${rec.result==='goal'?'#3ddc97':'#ff6b6b'}" stroke="#fff" stroke-width="1.5"/>`;
+  } else if (mineKicks && S.sel.aim){
+    const rt=reticleSigma(), a=S.sel.aim;
+    marks+=`<ellipse id="ret" cx="${SX(a.x)}" cy="${SY(a.y)}" rx="${rt.rx}" ry="${rt.ry}" fill="#f4c20d22" stroke="#f4c20d" stroke-width="2"/><path id="cross" d="M${SX(a.x)-8} ${SY(a.y)}H${SX(a.x)+8}M${SX(a.x)} ${SY(a.y)-8}V${SY(a.y)+8}" stroke="#f4c20d" stroke-width="2.5"/>`;
+  }
+  return `<svg id="gsvg" viewBox="0 0 600 320" role="img" aria-label="Arco">
+   <defs><pattern id="net" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0H14M0 0V14" stroke="#ffffff22" stroke-width="1" fill="none"/></pattern></defs>
+   <path d="M0 262H600" stroke="#ffffff30" stroke-width="2"/>
+   <rect x="60" y="100" width="480" height="160" fill="url(#net)"/>
+   <path d="M60 260V100H540V260" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+   <g id="keeper" style="${T.keeper}"><g>
+     <rect x="282" y="176" width="36" height="62" rx="14" fill="#f4c20d"/><circle cx="300" cy="164" r="13" fill="#e8c9a0"/>
+     <path d="M282 186L250 170M318 186L350 170" stroke="#f4c20d" stroke-width="9" stroke-linecap="round"/><circle cx="248" cy="168" r="8" fill="#fff"/><circle cx="352" cy="168" r="8" fill="#fff"/>
+     <path d="M292 238V262M308 238V262" stroke="#0a2a6b" stroke-width="9" stroke-linecap="round"/></g></g>
+   ${(!rec && !mineKicks && S.sel.dive!=null)?`<circle cx="${SX(E.DIVES[S.sel.dive].x)}" cy="${SY(E.DIVES[S.sel.dive].y)}" r="8" fill="#6f93ff" stroke="#fff" stroke-width="2"/>`:''}
+   ${zones}
+   ${(!rec && mineKicks && free)?`<rect id="cap" x="40" y="80" width="520" height="190" fill="transparent" style="cursor:crosshair"/>`:''}
+   ${marks}
+   <circle cx="300" cy="288" r="3" fill="#fff"/>
+   <g id="ball" style="${T.ball}"><circle cx="300" cy="288" r="11" fill="#fff" stroke="#111" stroke-width="2"/><path d="M300 281l5 4-2 6h-6l-2-6z" fill="#111"/></g>
+  </svg>${!rec?`<div class="prompt"><span id="ptxt">${promptText(mineKicks,free)}</span></div>`:''}`;
+}
+function promptText(mine,free){ if(!mine) return S.sel.dive==null?'Elegí hacia dónde tirarte':'Confirmá tu tiro'; if(!free) return S.sel.aim?'Confirmá el remate':'Elegí la zona del remate'; return S.sel.aim?'Mové el punto o confirmá el remate':'Tocá el arco para apuntar'; }
+function miniCard(p,role){ return `<div class="pc ${p.gk?'gk':''}"><div class="role">${role}</div>${cardInner(p,true)}</div>`; }
+function typeBtns(){
+  return `<div class="types" id="types">${E.TYPES.map(t=>`<button class="type" data-type="${t}" aria-pressed="${S.sel.type===t}"><b>${TYPE_INFO[t].n}</b><span>${TYPE_INFO[t].d}</span><div class="risk" title="Riesgo de errar">${[1,2,3].map(i=>`<i class="${i<=TYPE_INFO[t].r?'on':''}"></i>`).join('')}</div></button>`).join('')}</div>`;
+}
+function match(){
+  const pk=S.pk, rec=S.rec, sh=S.sh, mine=pk.team===0, free=S.mode==='libre';
+  const feed=S.feed.map(f=>`<p class="${f.c}">${f.t}</p>`).join('');
+  const dbg = rec ? `<details class="dbg"><summary>Detalle del penal</summary><table><tr><td>Chance de gol</td><td><b>${Math.round(rec.p.goal*100)}%</b></td></tr><tr><td>Atajada / Error</td><td>${Math.round(rec.p.save*100)}% / ${Math.round((rec.p.miss)*100)}%</td></tr><tr><td>Círculo de error</td><td>±${Math.round(rec.sigma.x*150)} cm</td></tr>${rec.p.parts.map(x=>`<tr><td>${esc(x.l)} <span class="muted">(${x.who==='k'?'pateador':'arquero'})</span></td><td style="color:${x.v>0?'var(--good)':'var(--bad)'}">${x.v>0?'+':''}${x.v.toFixed(2)}</td></tr>`).join('')}</table></details>` : '';
+  let ctl;
+  if (rec) ctl=S.online?`<p class="muted" style="margin-top:12px">${sh.winner!==null?'Termina la tanda en unos segundos...':'El próximo penal empieza en unos segundos...'}</p>`:`<div class="row" style="margin-top:12px"><button class="btn" id="next">${sh.winner!==null?'Ver resultado':'Siguiente penal'}</button></div>`;
+  else if (mine) ctl=timerRow()+typeBtns()+`<div class="row" style="margin-top:10px"><button class="btn" id="fire" ${S.sel.aim&&!S.sent?'':'disabled'}>Patear</button><span class="small muted" id="hint">${S.sent?'Esperando a tu rival...':hintText()}</span></div>`;
+  else ctl=timerRow()+`<div class="row" style="margin-top:10px"><button class="btn" id="fire" ${S.sel.dive!=null&&!S.sent?'':'disabled'}>Tirarme</button><span class="small muted">${S.sent?'Esperando a tu rival... ':''}Elegí una de las 9 zonas. Si el pateador apunta lejos de tu zona, no llegás.</span></div>`;
+  return `${board()}<div class="stage"><div><div class="goalwrap" id="goal">${goalSvg(pk,rec)}</div>${ctl}</div>
+  <div class="side"><div class="vs">${miniCard(pk.kicker,'Pateador')}${miniCard(pk.keeper,'Arquero')}</div>
+  <div><div class="row" style="margin-bottom:6px"><span class="tag live">Relato</span></div><div class="relato" id="relato">${feed}</div>${dbg}</div></div></div>`;
+}
+function hintText(){ if(!S.sel.aim) return ''; const r=reticleSigma(); return `El círculo marca dónde puede caer la pelota (±${Math.round(r.sx*150)} cm). Cerca del palo, se sale.`; }
+function svgPoint(ev){ const svg=$('#gsvg'), pt=svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY; const p=pt.matrixTransform(svg.getScreenCTM().inverse()); return {x:(p.x-300)/PX, y:(260-p.y)/PX}; }
+function refreshAim(){
+  const goal=$('#goal'); const pk=S.pk; goal.innerHTML=goalSvg(pk,null); bindSvg();
+  const f=$('#fire'); if(f) f.disabled = S.sent || (pk.team===0 ? !S.sel.aim : S.sel.dive==null);
+  const h=$('#hint'); if(h) h.textContent=hintText();
+}
+function bindSvg(){
+  const pk=S.pk, mine=pk.team===0, free=S.mode==='libre';
+  document.querySelectorAll('.zone').forEach(z=>z.onclick=()=>{ if(S.busy||S.sent) return; const i=+z.dataset.zone;
+    if(mine){ const zz=E.ZONES[i]; S.sel.aim={x:zz.x,y:zz.y,zone:i}; } else S.sel.dive=i; refreshAim(); });
+  const cap=$('#cap'); if(cap) cap.onpointerdown=ev=>{ if(S.busy||S.sent) return; const p=svgPoint(ev); S.sel.aim={x:Math.max(-3.76,Math.min(3.76,p.x)),y:Math.max(.05,Math.min(2.54,p.y))}; refreshAim(); };
+}
+function bindMatch(){
+  const r=$('#relato'); if(r) r.scrollTop=r.scrollHeight;
+  if (S.rec){ const n=$('#next'); if(n) n.onclick=afterKick; return; }
+  document.querySelectorAll('#types .type').forEach(b=>b.onclick=()=>{S.sel.type=b.dataset.type;document.querySelectorAll('#types .type').forEach(x=>x.setAttribute('aria-pressed',x===b)); if(S.sel.aim) refreshAim();});
+  bindSvg();
+  $('#fire').onclick=()=>fire();
+}
+function resultFeed(rec){
+  const pk=rec.pk; S.feed.push({c:'go',t:E.narrateKick(S.rng,rec)});
+  const win=rec.result==='goal';
+  S.feed.push({c:win?'good':'bad',t:win?`Gol de ${TN()[pk.team]}.`:(rec.result==='save'?'Atajada.':rec.result==='post'?'Palo.':rec.result==='bar'?'Travesaño.':'Afuera.')});
+}
+function playKick(kick,dive){
+  S.busy=true; clearInterval(S.tick); const pk=S.pk, sh=S.sh;
+  const rec=sh.play(pk,kick,dive);
+  const T=targets(rec); const set=(id,css)=>{const el=$(id); if(el) el.setAttribute('style',css);}; set('#keeper',T.keeper); set('#ball',T.ball);
+  const f=$('#fire'); if(f) f.disabled=true;
+  setTimeout(()=>{ S.rec=rec; S.busy=false; resultFeed(rec); render(); }, 1000);
+}
+function fire(){
+  if(S.busy||S.sent) return; const pk=S.pk, sh=S.sh;
+  if (S.online){
+    if (pk.team===0){ if(!S.sel.aim) return; olSend({t:'choice',kick:{x:S.sel.aim.x,y:S.sel.aim.y,type:S.sel.type}}); }
+    else { if(S.sel.dive==null) return; olSend({t:'choice',dive:S.sel.dive}); }
+    S.sent=true; refreshAim(); return;
+  }
+  let kick, dive;
+  if (pk.team===0){ kick={x:S.sel.aim.x,y:S.sel.aim.y,type:S.sel.type}; dive=E.aiDive(sh,pk,S.rng,S.diff); }
+  else { dive=S.sel.dive; kick=E.aiKick(sh,pk,S.rng,S.diff); }
+  playKick(kick,dive);
+}
+function afterKick(){
+  const sh=S.sh;
+  if (sh.winner!==null){ S.screen='end'; S.rec=null; S.pk=null; render(); return; }
+  if (sh.phase!==S.rec.pk.phase) S.feed.push({c:'sys',t:sh.phase==='gk'?'Igualdad tras los cinco. ¡Patean los arqueros!':'Siguen igualados. ¡Muerte súbita!'});
+  S.rec=null; S.pk=sh.peek(); resetSel(); pushPre(); render();
+}
+
+/* FIN */
+function endScr(){
+  const sh=S.sh, w=sh.winner, won=w===0;
+  const L=sh.log, my=L.filter(r=>r.pk.team===0), n=my.length;
+  const cnt=(a,t)=>a.filter(r=>r.kick.type===t).length, gl=a=>a.filter(r=>r.result==='goal').length;
+  const row=(lab,a)=>`<tr><td>${lab}</td><td>${a.length}</td><td>${gl(a)}</td><td>${cnt(a,'normal')} / ${cnt(a,'fuerte')} / ${cnt(a,'picada')}</td></tr>`;
+  const ai=L.filter(r=>r.pk.team===1);
+  return `${board()}<div class="final"><h1 style="color:${won?'var(--gold)':'var(--ink)'}">${won?'Ganaste la tanda':'Perdiste la tanda'}</h1>
+  <p class="muted">${E.narrateEnd(S.rng,sh,TN())}</p>
+  <div class="card" style="text-align:left;max-width:560px;margin:18px auto"><h3>Resumen</h3><table style="width:100%;border-collapse:collapse"><tr class="muted small"><td></td><td>Penales</td><td>Goles</td><td>Normal / Fuerte / Picada</td></tr>${row(S.online?esc(S.myName)+' (vos)':'Azul (vos)',my)}${row(S.online?esc(S.rivalName):'Oro (IA)',ai)}</table></div>
+  <div class="row" style="justify-content:center"><button class="btn" id="again" ${S.rematchSent?'disabled':''}>${S.rematchSent?'Esperando a tu rival...':'Revancha'}</button><button class="btn ghost" id="home">Inicio</button></div></div>`;
+}
+function bindEnd(){ $('#again').onclick=()=>{ if(S.online){ S.rematchSent=true; olSend({t:'rematch'}); render(); } else newGame(); }; $('#home').onclick=()=>{ if(S.online) olLeave(); else {S=null;render();} }; }
+
+/* ---------- ONLINE ---------- */
+const PBY = {}; PLAYERS.forEach(p=>PBY[p.id]=p);
+let OL = null, HOMEMSG = '', noticeT = null;
+const sNow = () => Date.now() + (OL ? OL.drift : 0);
+const RIV = () => (S && S.online) ? esc(S.rivalName||'Rival') : 'La IA';
+const RIVl = () => (S && S.online) ? esc(S.rivalName||'tu rival') : 'la IA';
+const TN = () => (S && S.online) ? [S.myName,S.rivalName] : ['Azul','Oro'];
+function olOffText(){ return (S&&S.online&&OL&&OL.seat!=null&&OL.online&&!OL.online[1-OL.seat]&&S.screen!=='ollobby'&&OL.names[1-OL.seat])?`${esc(S.rivalName)} se desconectó. Lo esperamos.`:''; }
+function notice(t,ms){ if(S) S.notice=t; const n=$('#notice'); if(n) n.innerHTML=t||''; clearTimeout(noticeT); if(ms) noticeT=setTimeout(()=>{ if(S) S.notice=''; const n2=$('#notice'); if(n2) n2.innerHTML=(S&&S.online)?olOffText():(HOMEMSG||''); },ms); }
+function ensureS(){ if (S && S.online) return;
+  S={screen:'ollobby',online:true,seed:1,rng:E.mulberry32(1),diff:'normal',informed:true,dmode:'subasta',mode:'libre',draft:null,au:null,order:[],sh:null,feed:[],sel:{type:'normal'},pk:null,busy:false,sent:false,rec:null,tick:null,timeLeft:60,ol:{},myName:'',rivalName:'',notice:''}; }
+function setNames(){ if(!S||!OL) return; S.myName=OL.names[OL.seat]||OL.myName; S.rivalName=OL.names[1-OL.seat]||'Rival'; }
+function olSend(m){ if(OL&&OL.ws&&OL.ws.readyState===1) OL.ws.send(JSON.stringify(m)); else notice('Sin conexión. Reintentando...',2500); }
+function olStart(first,name){
+  prefs.name=name; save(prefs);
+  let tok=null; try{ tok=sessionStorage.getItem('tp_tok'); if(!tok){ tok=Math.random().toString(36).slice(2)+Date.now().toString(36); sessionStorage.setItem('tp_tok',tok); } }catch(e){ tok=Math.random().toString(36).slice(2)+Date.now().toString(36); }
+  OL={ws:null,token:tok,drift:0,seat:null,code:first.code||null,names:['',''],online:[true,false],opts:{lotSec:30,mode:'libre'},closed:false,myName:name,first};
+  first.token=tok; first.name=name; HOMEMSG=''; olOpen(first);
+}
+function olOpen(first){
+  const ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host); OL.ws=ws;
+  ws.onopen=()=>{ ws.send(JSON.stringify(first || {t:'join',code:OL.code,name:OL.myName,token:OL.token})); };
+  ws.onmessage=e=>{ try{ olMsg(JSON.parse(e.data)); }catch(err){ console.error(err); } };
+  ws.onclose=()=>{ if(!OL||OL.closed) return; notice('Se cortó la conexión. Reconectando...'); if(!OL.code) { olLeave('No se pudo conectar con el servidor.'); return; } clearTimeout(OL.retry); OL.retry=setTimeout(()=>{ if(OL&&!OL.closed) olOpen(null); },1500); };
+  ws.onerror=()=>{};
+}
+function olLeave(msg){ if(OL){ OL.closed=true; try{ OL.ws.close(); }catch(e){} } OL=null; S=null; HOMEMSG=msg||''; try{ history.replaceState(null,'',location.pathname); }catch(e){} render(); }
+function olMsg(m){
+  if (m.now && OL) OL.drift = m.now - Date.now();
+  switch(m.t){
+    case 'err': if (m.fatal) olLeave(m.text); else notice(esc(m.text),3000); break;
+    case 'info': notice(esc(m.text),3500); break;
+    case 'presence': OL.online=m.online; OL.names=m.names; setNames(); if (S&&S.screen==='ollobby') render(); else { const n=$('#notice'); if(n&&!(S&&S.notice)) n.innerHTML=olOffText(); } break;
+    case 'lobby': OL.code=m.code; OL.seat=m.seat; OL.names=m.names; OL.opts=m.opts; OL.online=m.online; ensureS(); setNames(); S.screen='ollobby'; S.notice=''; try{ history.replaceState(null,'','?sala='+m.code); }catch(e){} render(); break;
+    case 'toss': ensureS(); OL.seat=m.seat; OL.names=m.names; setNames(); S.toss=m; S.sh=null; S.au=null; S.sent=false; S.orderSent=false; S.rematchSent=false; S.rec=null; S.busy=false; S.notice=''; S.screen='oltoss'; render(); break;
+    case 'au': OL.names=m.names; olAu(m); break;
+    case 'order': OL.names=m.names; olOrder(m); break;
+    case 'match': OL.names=m.names; olMatch(m); break;
+    case 'reveal': olReveal(m); break;
+    case 'turn': olTurn(m); break;
+  }
+}
+function olAu(m){
+  ensureS(); setNames(); S.dmode='subasta';
+  const prev=S.au, was=S.screen==='draft'&&prev&&S.online;
+  if (m.cur) m.cur.id=-1;
+  const A={lot:m.lot,lots:{length:m.total},lotSec:m.lotSec,cur:m.cur,budget:m.budget,teams:m.teams,byId:PBY,
+    log:m.sold.map(e=>({team:e.team,id:e.id,price:e.price,fair:e.fair,nobids:e.nobids,auto:e.auto})),
+    theme:m.over?m.over.theme:{id:'',name:''},wildGK:m.over?m.over.wildGK:false,S:m.kickFirst?0:1,F:m.kickFirst?1:0};
+  S.au={A,phase:m.phase,ai:null,sig:'',ext:(was&&prev.A.lot===m.lot&&prev.A.cur)?prev.A.cur.ext:(m.cur?m.cur.ext:0),guess:prev?prev.guess:'',until:m.until,ready:m.ready};
+  S.draft=A; S.F=A.F; S.screen='draft';
+  const structural=!was||prev.phase!==m.phase||prev.A.lot!==m.lot||prev.A.log.length!==m.sold.length||(m.phase==='over'&&prev.ready[0]!==m.ready[0]);
+  if (structural) render(); else { S.au.sig=''; auLive(sNow()); }
+}
+function olOrder(m){
+  ensureS(); setNames(); S.dmode='subasta';
+  S.draft={teams:m.teams,byId:PBY,S:m.first?0:1,F:m.first?1:0}; S.ol.orderDeadline=m.deadline;
+  if (m.locked){ S.orderSent=true; S.screen='order'; render(); return; }
+  if (S.screen==='order' && !S.orderSent) return;
+  startOrder();
+}
+function olSendOrder(){ if(S.orderSent) return; olSend({t:'order',ids:S.order}); S.orderSent=true; clearInterval(S.tick); render(); }
+function olMatch(m){
+  ensureS(); setNames(); S.mode=m.mode; S.rng=E.mulberry32(m.nseed);
+  const mk=(ids,ord)=>{ const ps=ids.map(id=>PBY[id]); return {name:'',gk:ps.find(p=>p.gk),order:ord.map(id=>PBY[id])}; };
+  S.teams=[mk(m.teams[0],m.orders[0]),mk(m.teams[1],m.orders[1])];
+  S.draft={teams:m.teams,byId:PBY,S:m.first,F:1-m.first};
+  S.sh=new E.Shootout(S.teams,m.first,E.mulberry32(m.seed),{mode:m.mode});
+  S.feed=[{c:'sys',t:`Empieza la tanda. Patea primero ${m.first===0?esc(S.myName)+' (vos)':esc(S.rivalName)}.`}];
+  S.rec=null; S.busy=false; S.sent=!!m.sent; S.pk=S.sh.peek(); resetSel(); pushPre(); S.notice='';
+  for (const h of m.history){
+    const rec=S.sh.play(S.pk,h.kick,h.dive); resultFeed(rec);
+    if (S.sh.winner!==null) break;
+    if (S.sh.phase!==rec.pk.phase) S.feed.push({c:'sys',t:S.sh.phase==='gk'?'Igualdad tras los cinco. ¡Patean los arqueros!':'Siguen igualados. ¡Muerte súbita!'});
+    S.pk=S.sh.peek(); resetSel(); pushPre();
+  }
+  S.ol.deadline=m.deadline;
+  if (S.sh.winner!==null){ S.screen='end'; S.pk=null; S.rec=null; render(); return; }
+  S.screen='match'; render();
+}
+function olReveal(m){ if(!S||!S.sh||S.screen!=='match'||S.sh.log.length>=m.n) return; S.sent=false; S.busy=false; playKick(m.kick,m.dive); }
+function olTurn(m){
+  if(!S||!S.sh) return;
+  if (m.deadline) S.ol.deadline=m.deadline;
+  S.sent=false;
+  if (S.rec) afterKick(); else if (S.screen==='match') render();
+}
+function startTimerUntil(dl){
+  clearInterval(S.tick); const tot=SHOT_SEC*1000;
+  const upd=()=>{ const left=Math.max(0,dl-800-sNow()); const b=$('#tbar2'),x=$('#ttxt2'); if(b){ b.style.transition='none'; b.style.width=Math.min(100,left/tot*100)+'%'; b.style.background=left<=3000?'var(--bad)':'var(--gold)'; } if(x) x.textContent=Math.ceil(left/1000)+' s'; };
+  upd(); S.tick=setInterval(upd,250);
+}
+/* pantallas online */
+function onlineCard(){
+  if (!ONLINE) return `<div class="card mode off"><h3>Desafiar a otro usuario</h3><p class="muted">La partida online se juega desde la versión con servidor. Esta es solo la demo contra la IA.</p><button class="btn ghost" disabled>No disponible acá</button></div>`;
+  return `<div class="card mode"><h3>Jugar contra otra persona</h3>
+    <p class="muted">Creás una sala, le pasás el link a tu rival y juegan una subasta ciega seguida de la tanda.</p>
+    <input class="txt" id="olName" maxlength="16" placeholder="Tu nombre" value="${esc(prefs.name||'')}" aria-label="Tu nombre">
+    <button class="btn" id="olCreate">Crear partida</button>
+    <div class="small muted">¿Te pasaron un código?</div>
+    <div class="row"><input class="txt" id="olCode" maxlength="5" placeholder="Código" style="flex:1;text-transform:uppercase" aria-label="Código de sala"><button class="btn ghost" id="olJoin">Entrar</button></div></div>`;
+}
+function salaBanner(){
+  if (!ONLINE || !SALA) return '';
+  return `<div class="card" style="margin:18px 0 0;border-color:var(--gold)"><h3>Te invitaron a una partida</h3><p class="muted">Sala <b>${SALA}</b>. Poné tu nombre y entrá.</p><div class="row"><input class="txt" id="olName2" maxlength="16" placeholder="Tu nombre" value="${esc(prefs.name||'')}" style="flex:1" aria-label="Tu nombre"><button class="btn" id="olJoinLink">Entrar a la sala</button></div></div>`;
+}
+function olHomeBind(){
+  const nm=()=>((($('#olName2')||$('#olName')||{}).value)||'').trim()||'Jugador';
+  const c=$('#olCreate'); if(c) c.onclick=()=>olStart({t:'create'},nm());
+  const j=$('#olJoin'); if(j) j.onclick=()=>{ const code=(($('#olCode')||{}).value||'').trim().toUpperCase(); if(code.length!==5){ notice('El código tiene 5 letras.',2500); return; } olStart({t:'join',code},nm()); };
+  const jl=$('#olJoinLink'); if(jl) jl.onclick=()=>olStart({t:'join',code:SALA},nm());
+}
+function olLobby(){
+  const link=location.origin+location.pathname+'?sala='+OL.code, host=OL.seat===0, o=OL.opts, rivalIn=!!OL.names[1], other=OL.names[1-OL.seat];
+  const me=`<div class="it"><span>${esc(OL.names[OL.seat])}</span><span class="muted">vos</span></div>`;
+  const riv=other?`<div class="it"><span>${esc(other)}</span><span class="muted">${OL.online[1-OL.seat]?'conectado':'desconectado'}</span></div>`:`<div class="it empty"><span>Esperando a tu rival...</span></div>`;
+  const rules = host ? `<div class="small muted">Duración de cada lote</div><div class="seg">${[[30,'30 segundos'],[60,'60 segundos']].map(([v,l])=>`<button data-olot="${v}" aria-pressed="${o.lotSec===v}">${l}</button>`).join('')}</div><div class="small muted" style="margin-top:10px">Puntería</div><div class="seg">${[['libre','Punto libre'],['zonas','9 zonas']].map(([v,l])=>`<button data-omode="${v}" aria-pressed="${o.mode===v}">${l}</button>`).join('')}</div>` : `<p>Lote de <b>${o.lotSec} segundos</b>. Puntería: <b>${o.mode==='libre'?'punto libre':'9 zonas'}</b>.</p><p class="small muted">Las reglas las elige quien creó la sala.</p>`;
+  return `<h2>Sala ${OL.code}</h2>
+  <div class="card" style="margin:12px 0"><h3>${host?'Pasale este link a tu rival':'Link de la sala'}</h3><div class="row"><input class="txt" id="olLink" readonly value="${esc(link)}" style="flex:1;min-width:200px"><button class="btn" id="olCopy">Copiar link</button></div><p class="small muted" style="margin:8px 0 0">Código: <b>${OL.code}</b>. Formato: subasta ciega.</p></div>
+  <div class="grid2c"><div class="card"><h3>Jugadores</h3><div class="ros">${me}${riv}</div></div><div class="card"><h3>Reglas</h3>${rules}</div></div>
+  <div class="row" style="margin-top:14px">${host?`<button class="btn" id="olStart" ${rivalIn&&OL.online[1]?'':'disabled'}>Empezar</button>`:'<span class="muted">Esperando a que empiece quien creó la sala...</span>'}<button class="btn ghost" id="olLeave">Salir</button></div>`;
+}
+function bindOlLobby(){
+  $('#olCopy').onclick=()=>{ const i=$('#olLink'); try{ navigator.clipboard.writeText(i.value).then(()=>notice('Link copiado.',2000),()=>{i.select();}); }catch(e){ i.select(); } };
+  document.querySelectorAll('[data-olot]').forEach(b=>b.onclick=()=>olSend({t:'opts',lotSec:+b.dataset.olot}));
+  document.querySelectorAll('[data-omode]').forEach(b=>b.onclick=()=>olSend({t:'opts',mode:b.dataset.omode}));
+  const st=$('#olStart'); if(st) st.onclick=()=>olSend({t:'start'});
+  $('#olLeave').onclick=()=>olLeave();
+}
+function olToss(){
+  const t=S.toss, mine=t.winner===OL.seat, coin=`<div class="coin">${t.face==='CARA'?'C':'X'}</div>`;
+  if (mine) return `<div class="final">${coin}<h2>Ganaste el sorteo</h2><p class="muted">Salió ${t.face.toLowerCase()}. Elegí si querés patear primero o segundo en la tanda. Patear primero es una ventaja, pero arrancás la subasta con 5 fichas menos: 95 contra 100.</p><div class="row" style="justify-content:center"><button class="btn" data-k="1">Patear primero (95 fichas)</button><button class="btn ghost" data-k="0">Patear segundo (100 fichas)</button></div></div>`;
+  return `<div class="final">${coin}<h2>Ganó el sorteo ${esc(S.rivalName)}</h2><p class="muted">Está decidiendo si patea primero o segundo...</p></div>`;
+}
+function bindOlToss(){ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>olSend({t:'toss',kickFirst:b.dataset.k==='1'})); }
+
+render();
+})();
+</script>
+</body>
+</html>
