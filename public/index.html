@@ -86,6 +86,7 @@ button.pc[disabled]{opacity:.45;cursor:not-allowed}
 .ros{display:flex;flex-direction:column;gap:6px}
 .ros .it{display:flex;justify-content:space-between;gap:8px;font-size:14px;padding:6px 10px;border-radius:8px;background:var(--panel2)}
 .ros .it.gk{border-left:3px solid #6f93ff}
+.ros .rr{white-space:nowrap}.ros .rr b{color:var(--gold)}.tg.gkt{background:#6f93ff33;color:#a9c0ff;margin-left:0}
 .ros .it.empty{background:transparent;border:1px dashed var(--line);color:var(--muted)}
 .feed{max-height:140px;overflow:auto;font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
 .feed b{color:var(--ink)}
@@ -118,6 +119,14 @@ button.pc[disabled]{opacity:.45;cursor:not-allowed}
 .goalwrap{background:linear-gradient(#0a3a1a,#0e4d24);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
 .goalwrap svg{position:absolute;left:0;top:0;width:100%;height:100%}
 .pxc{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;background:#0b4420}
+.tutov{position:fixed;inset:0;z-index:100;background:#03081ae6;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.tutbox{background:var(--panel);border:2px solid var(--gold);border-radius:16px;padding:20px;max-width:520px;width:100%;text-align:center}
+.tutbox h2{color:var(--gold);margin-bottom:12px}
+.tutbox p{text-align:left;font-size:16px}
+.tutbox .pxc{border-radius:10px;border:1px solid var(--line)}
+.tvis{margin:0 0 12px}
+.tmock{background:#04102e;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left}
+.tdots{display:flex;gap:6px;justify-content:center;margin-bottom:10px}.tdots i{width:10px;height:10px;border-radius:50%;background:var(--line)}.tdots i.on{background:var(--gold)}
 .face{margin-top:12px;background:#060d26;border:1px solid var(--line);border-radius:14px;overflow:hidden}
 .dlgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px}
 @media(max-width:560px){.dlgs{grid-template-columns:1fr}}
@@ -1019,7 +1028,7 @@ function homeHTML(){ return `<div class="topbar"><div class="brand">Tanda de <b>
 function reHome(){ app.innerHTML=homeHTML(); bindHome(); }
 function home(){
   return `<section class="hero"><h1>Tanda de <span>penales</span></h1>
-  <p>Armás tu equipo con leyendas de Boca que patearon o atajaron en tandas reales. Después, a definir desde los doce pasos.</p></section>
+  <p>Armás tu equipo con leyendas de Boca que patearon o atajaron en tandas reales. Después, a definir desde los doce pasos.</p><button class="btn ghost" id="tutBtn" style="margin-top:6px">¿Cómo se juega? Ver tutorial</button></section>
   ${salaBanner()}<div class="modes">
     <div class="card mode"><h3>Jugar contra la IA</h3>
       <div class="small muted">Formato del draft</div>
@@ -1043,6 +1052,7 @@ function home(){
   </ol></div>`;
 }
 function bindHome(){
+  const tb=$('#tutBtn'); if(tb) tb.onclick=()=>tutShow(0);
   document.querySelectorAll('[data-dr]').forEach(b=>b.onclick=()=>{prefs.draft=b.dataset.dr;save(prefs);reHome();});
   document.querySelectorAll('[data-lot]').forEach(b=>b.onclick=()=>{prefs.lot=+b.dataset.lot;save(prefs);reHome();});
   document.querySelectorAll('[data-diff]').forEach(b=>b.onclick=()=>{prefs.diff=b.dataset.diff;save(prefs);reHome();});
@@ -1211,7 +1221,7 @@ function auBegin(kicker){
 const tnm = t => t===0?'Vos':RIV();
 function auRoster(t){
   const A=S.au.A, paid={}; A.log.forEach(e=>{ if(e.team===t) paid[e.id]=e.price; });
-  const rows=A.teams[t].map(id=>{const p=A.byId[id];return `<div class="it ${p.gk?'gk':''}"><span>${esc(p.ap)}</span><span class="muted">${p.gk?'ARQ':esc(POS[p.pos]||p.pos)} · ${paid[id]}</span></div>`;});
+  const rows=A.teams[t].map(id=>{const p=A.byId[id];return `<div class="it ${p.gk?'gk':''}"><span>${esc(p.ap)}</span><span class="rr">${p.gk?'<span class="tg gkt">ARQ</span> ':''}<b>${E.ovr(p)}</b> <span class="muted">· ${paid[id]} ${paid[id]===1?'ficha':'fichas'}</span></span></div>`;});
   while(rows.length<6) rows.push('<div class="it empty">...</div>');
   return `<div class="card"><h3>${t===0?'Tu equipo':RIV()}</h3><div class="bigfi">${A.budget[t]} <span class="small muted" style="font-family:var(--body);font-weight:600">fichas</span></div><div class="small muted" style="margin:4px 0 8px">Podés ofertar hasta ${Math.max(0,E.auMax(A,t))}.</div><div class="ros">${rows.join('')}</div></div>`;
 }
@@ -1913,6 +1923,53 @@ function bindMus() {
   b.onclick = () => { prefs.music = prefs.music === false; save(prefs); if (prefs.music) audInit(); audSync(); b.setAttribute('aria-pressed', prefs.music); b.textContent = prefs.music ? '♪ Música' : '♪ Silencio'; };
 }
 
+/* ---------- TUTORIAL "Soy nuevo" ---------- */
+const TUT = [
+  { t: 'El objetivo', x: 'Armás un equipo con 6 leyendas de Boca: 5 jugadores de campo y 1 arquero. Después tu equipo se enfrenta a otro en una tanda de penales. Gana el que convierte más.', v: 'team' },
+  { t: '1) La subasta', x: 'Los jugadores salen de a uno y tenés 100 fichas para todo el equipo. Al principio ves poco (puesto y época); con los segundos aparecen el nombre, las habilidades y el nivel. Ofertá más que tu rival: si nadie ofrece, se sortea y se paga 1 ficha. Te tiene que quedar 1 ficha por cada jugador que falte. Primero se subastan los dos arqueros: el que gana elige cuál se lleva.', v: 'bid' },
+  { t: '2) El orden de pateadores', x: 'Ordená a tus 5 jugadores de campo: el primero de la lista patea primero. Tenés 15 segundos, y el botón "Orden sugerido" lo arma por vos. Tu arquero solo patea si hay empate.', v: 'order' },
+  { t: '3) Cada penal', x: 'Si pateás: tocá el arco para apuntar y elegí cómo pegarle: normal (segura), fuerte (más difícil de atajar pero arriesgada) o picada (muy arriesgada). Si atajás: elegí hacia cuál de las 9 zonas te tirás. Si el pateador apunta lejos, no llegás. Los dos eligen a la vez, con 15 segundos.', v: 'goal' },
+  { t: '4) El final', x: 'Es mejor de 5. Si hay empate patean los arqueros y después sigue la muerte súbita. Al terminar se eligen la Figura, el Mejor pateador y el Burro de la tanda. Durante el cara a cara podés escribirle a tu rival, y arriba a la derecha apagás la música.', v: 'awards' }
+];
+function tutVisual(v) {
+  if (v === 'team') return '<canvas id="tcv" class="pxc" width="150" height="56" data-k="team"></canvas>';
+  if (v === 'goal') return '<canvas id="tcv" class="pxc" width="150" height="80" data-k="goal"></canvas><div class="small muted" style="margin-top:4px">El círculo amarillo es dónde puede caer tu pelota.</div>';
+  if (v === 'bid') return `<div class="tmock"><div class="bidrow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center"><div><small>Oferta actual</small><b>12</b></div><div><small>Lidera</small><b>Rival</b></div><div><small>Tu tope</small><b>80</b></div></div><div class="row" style="margin-top:8px;justify-content:center"><span class="btn" style="padding:8px 14px">Ofertar 13</span><span class="btn ghost" style="padding:8px 14px">Retirarme</span></div></div>`;
+  if (v === 'order') return `<div class="tmock">${['Jugador 1 · patea primero', 'Jugador 2', 'Jugador 3', 'Jugador 4', 'Jugador 5'].map((x, i) => `<div style="display:flex;gap:8px;padding:3px 0"><b style="color:var(--gold);width:16px">${i + 1}</b><span>${x}</span><span class="muted" style="margin-left:auto">▲ ▼</span></div>`).join('')}</div>`;
+  if (v === 'awards') return '<div class="tmock" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><span class="tg">Figura de la tanda</span><span class="tg">Mejor pateador</span><span class="tg">El burro</span></div>';
+  return '';
+}
+function tutDraw() {
+  const cv = $('#tcv'); if (!cv) return; const c = cv.getContext('2d'), k = cv.dataset.k, now = Date.now();
+  if (k === 'team') {
+    c.drawImage(bgFace(), 0, 0);
+    [20, 45, 70].forEach((x, i) => human(c, { x, y: 50, s: 1.1, face: 1, kit: KIT[0], look: lookOf({ id: i * 7 + 3 }), pose: Math.floor(now / 400 + i) % 2 ? POSES.stand : POSES.stand2 }));
+    [105, 128].forEach((x, i) => human(c, { x, y: 50, s: 1.1, face: -1, kit: KIT[1], look: lookOf({ id: i * 5 + 40 }), pose: Math.floor(now / 400 + i) % 2 ? POSES.ready : POSES.ready2, glove: i === 1 }));
+  } else if (k === 'goal') {
+    c.drawImage(bgGoal(), 0, 0);
+    const sw = [0, 2, 0, -2][Math.floor(now / 300) % 4];
+    human(c, { abs: true, kit: KIT[1], look: lookOf({ id: 40 }), glove: true, pose: { hip: [75 + sw, 53], sh: [75 + sw, 44], hd: [75 + sw, 39], hands: [[67 + sw, 50], [83 + sw, 50]], feet: [[71 + sw, 65], [79 + sw, 65]] } });
+    pxBall(c, 75, 72, true);
+    const on = Math.floor(now / 500) % 2; c.strokeStyle = '#f4c20d'; c.lineWidth = 1; c.beginPath(); c.arc(112, 34, on ? 8 : 7, 0, 7); c.stroke(); pxr(c, 108, 34, 9, 1, '#f4c20d'); pxr(c, 112, 30, 1, 9, '#f4c20d');
+  }
+}
+let TUTT = null;
+function tutClose(done) { clearInterval(TUTT); const o = $('#tut'); if (o) o.remove(); if (done) { prefs.intro = true; save(prefs); } }
+function tutShow(step) {
+  let o = $('#tut'); if (!o) { o = document.createElement('div'); o.id = 'tut'; o.className = 'tutov'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); document.body.appendChild(o); }
+  clearInterval(TUTT);
+  if (step < 0) {
+    o.innerHTML = `<div class="tutbox"><h2>¿Sos nuevo?</h2><canvas id="tcv" class="pxc" width="150" height="56" data-k="team"></canvas><p style="margin-top:12px">Si es tu primera vez, te mostramos cómo se juega en menos de un minuto.</p><div class="row" style="justify-content:center;gap:10px"><button class="btn" id="tYes">Sí, soy nuevo</button><button class="btn ghost" id="tNo">No, ya sé jugar</button></div></div>`;
+    $('#tYes').onclick = () => tutShow(0); $('#tNo').onclick = () => tutClose(true);
+  } else {
+    const d = TUT[step], last = step === TUT.length - 1;
+    o.innerHTML = `<div class="tutbox"><div class="tdots">${TUT.map((_, i) => `<i class="${i === step ? 'on' : ''}"></i>`).join('')}</div><h2>${d.t}</h2><div class="tvis">${tutVisual(d.v)}</div><p>${d.x}</p><div class="row" style="justify-content:space-between"><button class="btn ghost" id="tBack">${step ? 'Atrás' : 'Saltar'}</button><button class="btn" id="tNext">${last ? '¡A jugar!' : 'Siguiente'}</button></div></div>`;
+    $('#tBack').onclick = () => step ? tutShow(step - 1) : tutClose(true); $('#tNext').onclick = () => last ? tutClose(true) : tutShow(step + 1);
+  }
+  TUTT = setInterval(tutDraw, 150); tutDraw();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#tut')) tutClose(true); });
+
 /* FIN */
 /* Premios de la tanda */
 function tandaAwards(sh){
@@ -2106,6 +2163,7 @@ function olToss(){
 function bindOlToss(){ document.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>olSend({t:'toss',kickFirst:b.dataset.k==='1'})); }
 
 render();
+if(prefs.intro===undefined) tutShow(-1);
 })();
 </script>
 </body>
