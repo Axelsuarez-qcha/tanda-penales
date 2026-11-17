@@ -470,10 +470,10 @@ function vtAI(s, rng, diff) {
 }
 
 /* ---------- 6c) SUBASTA CIEGA CON PATRÓN ----------
-   12 lotes (2 arqueros + 10 de campo). Todos los de campo comparten un rasgo oculto (el patrón). Cada lote dura
+   11 lotes: el primero reúne a los 2 arqueros (se subasta el derecho a elegir) y los otros 10 son de campo. Todos los de campo comparten un rasgo oculto (el patrón). Cada lote dura
    LOT_SEC segundos y va soltando pistas. Gana la oferta más alta al terminar el tiempo (o cuando el rival se retira).
    Una oferta en los últimos 3 s estira la subasta 5 s. Presupuesto: 100 fichas por equipo (el que patea primero parte con 95). */
-const AU = { SLOTS: 6, FIELD: 5, BUDGET: 100, FIRST_COST: 5, SNIPE: 3000, EXTEND: 5000, MAXEXT: 8, LOT_SEC: 60 };
+const AU = { SLOTS: 6, FIELD: 5, BUDGET: 100, FIRST_COST: 5, SNIPE: 3000, EXTEND: 5000, MAXEXT: 8, LOT_SEC: 60, PICK_MS: 12000 };
 const THEMES = [
   { id: 'inf', name: 'Surgidos de las inferiores', dim: 'org', test: p => p.org === 'Inferiores' },
   { id: 'zur', name: 'Zurdos', dim: 'pierna', test: p => p.pierna === 'I' },
@@ -487,7 +487,7 @@ const THEMES = [
   { id: 'd10', name: 'Jugaron sobre todo en los 2010', dim: 'dec', test: p => p.dec === 2010 },
   { id: 'd20', name: 'Jugaron sobre todo en los 2020', dim: 'dec', test: p => p.dec === 2020 },
 ];
-const AU_CLUES = [['pos', 0], ['dec', 0], ['tray', 12], ['nombre', 24], ['perks', 36], ['nivel', 48]];
+const AU_CLUES = [['pos', 0], ['dec', 0], ['tray', 0], ['nombre', 20], ['perks', 40], ['nivel', 40]]; // en segundos de un lote de 60: con 30 s salen a los 0, 10 y 20
 const AU_LBL = { pos: 'Puesto', dec: 'Época', org: 'Cuna', pais: 'Nació en', pierna: 'Pierna', alt: 'Altura', sel: 'Selección', tray: 'En Boca', tandas: 'En tandas', perks: 'Perks', nombre: 'Nombre', nivel: 'Nivel' };
 const POS_LBL = { ARQ: 'Arquero', DFC: 'Defensor central', DFI: 'Lateral izquierdo', DFD: 'Lateral derecho', LI: 'Lateral izquierdo', LD: 'Lateral derecho', MC: 'Volante central', MCD: 'Volante defensivo', MCO: 'Volante ofensivo', MI: 'Volante izquierdo', MD: 'Volante derecho', ENG: 'Enganche', ED: 'Extremo derecho', EI: 'Extremo izquierdo', EXT: 'Extremo', DC: 'Delantero', SD: 'Segundo delantero' };
 const decTxt = d => d === 1980 ? 'Años 80' : d === 1990 ? 'Años 90' : d === 2000 ? 'Años 2000' : d === 2010 ? 'Años 2010' : d === 2020 ? 'Años 2020' : 'Décadas del ' + d;
@@ -520,11 +520,17 @@ function auNew(players, rng, o = {}) {
   const fm = players.filter(p => !p.gk && th.test(p)), gm = players.filter(p => p.gk && th.test(p));
   const f = shuffle(rng, fm).slice(0, 10);
   const wildGK = gm.length < 2, g = shuffle(rng, wildGK ? players.filter(p => p.gk) : gm).slice(0, 2);
-  const lots = shuffle(rng, f.concat(g)), byId = {}, wild = {};
-  lots.forEach(p => { byId[p.id] = p; wild[p.id] = p.gk && wildGK; });
-  const raw = lots.map(p => auFairC(ovr(p))), sc = (2 * AU.BUDGET) / raw.reduce((a, b) => a + b, 0), fair = {};
-  lots.forEach((p, i) => fair[p.id] = raw[i] * sc);
-  return { mode: 'subasta', theme: th, wildGK, lots: lots.map(p => p.id), byId, wild, fair, mu: 2 * AU.BUDGET / 12, rng, lotSec: o.lotSec || AU.LOT_SEC,
+  const lots = [g[0]].concat(f), byId = {}, wild = {};
+  g.concat(f).forEach(p => { byId[p.id] = p; wild[p.id] = p.gk && wildGK; });
+  const all = g.concat(f), raw = all.map(p => auFairC(ovr(p))), sc = (2 * AU.BUDGET) / raw.reduce((a, b) => a + b, 0), fair = {};
+  all.forEach((p, i) => fair[p.id] = raw[i] * sc);
+  /* El lote de arqueros: se puja por elegir. Quien gana paga su oferta y el otro se queda con el que sobra por 1 ficha.
+     Precio de indiferencia = diferencia de valor entre ambos + 1. */
+  const hi = fair[g[0].id] >= fair[g[1].id] ? g[0] : g[1], lo = hi === g[0] ? g[1] : g[0];
+  const choiceFair = Math.max(1, fair[hi.id] - fair[lo.id] + 1), gkCost = choiceFair + 1;
+  const fsum = f.reduce((s, p) => s + fair[p.id], 0), k = (2 * AU.BUDGET - gkCost) / fsum;
+  f.forEach(p => fair[p.id] *= k);
+  return { mode: 'subasta', theme: th, wildGK, lots: lots.map(p => p.id), pair: [g[0].id, g[1].id], choiceFair, byId, wild, fair, mu: (2 * AU.BUDGET - gkCost) / 10, rng, lotSec: o.lotSec || AU.LOT_SEC,
     teams: [[], []], budget: [AU.BUDGET, AU.BUDGET], S: 0, F: 1, lot: -1, cur: null, over: false, log: [] };
 }
 function auStart(A, firstKicker) { A.S = firstKicker; A.F = 1 - firstKicker; A.budget[firstKicker] -= AU.FIRST_COST; return A; }
@@ -540,6 +546,7 @@ function auNext(A, now) {
     const id = A.lots[A.lot], el = [0, 1].filter(t => auElig(A, t, id));
     if (el.length === 1) { evs.push(auSell(A, el[0], id, Math.min(1, auMax(A, el[0])), { auto: true })); continue; }
     A.cur = { id, start: now, end: now + A.lotSec * 1000, bid: 0, leader: null, done: [false, false], ext: 0, closed: null, bids: [] };
+    if (A.lot === 0) A.cur.pair = A.pair.slice();
     evs.push({ type: 'lot', lot: A.lot, id }); return evs;
   }
 }
@@ -562,12 +569,31 @@ function auDrop(A, t) {
 }
 function auPass(A, t) { if (A.cur && !A.cur.closed) A.cur.done[t] = true; }
 function auTick(A, now) {
-  const c = A.cur; if (!c || c.closed) return [];
+  const c = A.cur; if (!c) return [];
+  if (c.closed) { // lote de arqueros esperando la elección: si se agota el tiempo elige el mejor
+    if (c.pick && !c.picked && now >= c.pick.until) return auPickGK(A, c.pick.team, auBestGK(A));
+    return [];
+  }
   if (!(now >= c.end || (c.done[0] && c.done[1]))) return [];
   let ev;
+  if (c.pair) {
+    const nob = c.leader === null, w = nob ? (A.rng() < .5 ? 0 : 1) : c.leader, price = nob ? Math.min(1, auMax(A, w)) : c.bid;
+    ev = { type: 'gkwin', team: w, price, nobids: nob, timeout: now >= c.end };
+    c.pick = { team: w, price, nobids: nob, until: now + AU.PICK_MS };
+    c.closed = ev; return [ev];
+  }
   if (c.leader === null) { const w = A.rng() < .5 ? 0 : 1; ev = auSell(A, w, c.id, Math.min(1, auMax(A, w)), { nobids: true }); }
   else ev = auSell(A, c.leader, c.id, c.bid, { timeout: now >= c.end });
   c.closed = ev; return [ev];
+}
+const auBestGK = A => A.pair.slice().sort((a, b) => ovr(A.byId[b]) - ovr(A.byId[a]))[0];
+/* quien ganó el lote de arqueros elige uno; el otro va al rival por 1 ficha */
+function auPickGK(A, t, gid) {
+  const c = A.cur; if (!c || !c.pick || c.picked || c.pick.team !== t || !A.pair.includes(gid)) return [];
+  const other = A.pair.find(x => x !== gid);
+  const e1 = auSell(A, t, gid, c.pick.price, { gk: true, nobids: c.pick.nobids });
+  const e2 = auSell(A, 1 - t, other, Math.min(1, auMax(A, 1 - t)), { gk: true, left: true });
+  c.picked = true; c.closed = e1; return [e1, e2];
 }
 /* IA subastadora (sirve para cualquiera de los dos equipos) */
 const AU_AI = {
@@ -580,7 +606,9 @@ function auAIInit(A, rng, diff, me) {
     nextAct: c.start + r(2, 14) * sc * 1000, seen: 0, snipe: rng() < P.snipe, rng };
 }
 function auAIMax(A, ai, now) {
-  const c = A.cur, P = ai.P, tSec = (now - c.start) / 1000 / (A.lotSec / 60), r = Math.min(P.rmax, .2 + .8 * tSec / P.tfull);
+  const c = A.cur, P = ai.P;
+  if (c.pair) return Math.max(0, Math.min(Math.floor((A.choiceFair + ai.noise * .6) * (1 + (P.aggr - 1) * .35)), auMax(A, ai.me)));
+  const  tSec = (now - c.start) / 1000 / (A.lotSec / 60), r = Math.min(P.rmax, .2 + .8 * tSec / P.tfull);
   const est = A.mu + (A.fair[c.id] - A.mu) * r + ai.noise, slots = AU.SLOTS - A.teams[ai.me].length, per = A.budget[ai.me] / slots;
   const mult = Math.pow(clamp(per / A.mu, .7, 2.4), .8);
   return Math.min(Math.floor(est * mult * P.aggr), auMax(A, ai.me));
@@ -593,6 +621,8 @@ function auAIStep(A, ai, now) {
   }
   if (now < ai.nextAct) return null;
   const max = auAIMax(A, ai, now), price = c.bid;
+  /* Si no le alcanzan las fichas para superar la oferta, se queda callada: no se retira, así no revela su tope y el lote sigue hasta que termine el reloj. */
+  if (auMax(A, ai.me) < price + 1) { ai.nextAct = now + 600; return null; }
   if (max >= price + 1) {
     const amount = Math.min(max, price + 1 + Math.floor(ai.rng() * (1 + (max - price) * .15)));
     ai.nextAct = now + 600; return { type: 'bid', amount };
@@ -652,6 +682,6 @@ function narrateEnd(rng, sh, names) {
 
 const Engine = { PHYS, SIDES, TYPES, DIVES, ZONES, GW, GH, PX, KICK, MORALE, mulberry32, shuffle, pick, clamp, shrink, calibrate, dataSide, physSide, physOf, perksOf, ovr, kickerRate, keeperStop,
   modifiers, kickParams, keeperParams, savep, classify, cellStats, resolveKick, Shootout, payoffMatrix, solve, aiKick, aiDive, aiOrder, options, placeText,
-  newDraft, startDraft, turn, applyPick, legalPicks, feasible, AU, THEMES, auThemesFor, auClues, auNew, auStart, auElig, auMax, auNext, auBid, auPass, auDrop, auTick, auAIInit, auAIStep, auAIMax, VT, vtPrice, vtNew, vtStart, vtTurn, vtLegal, vtApply, vtAI, vtVal, vtFirst, narratePre, narrateKick, narrateEnd, get GS() { return GS; }, get GKS() { return GKS; } };
+  newDraft, startDraft, turn, applyPick, legalPicks, feasible, AU, THEMES, auThemesFor, auClues, auNew, auStart, auElig, auMax, auNext, auBid, auPass, auDrop, auTick, auPickGK, auBestGK, auAIInit, auAIStep, auAIMax, VT, vtPrice, vtNew, vtStart, vtTurn, vtLegal, vtApply, vtAI, vtVal, vtFirst, narratePre, narrateKick, narrateEnd, get GS() { return GS; }, get GKS() { return GKS; } };
 if (typeof module !== 'undefined' && module.exports) module.exports = Engine; else root.Engine = Engine;
 })(typeof window !== 'undefined' ? window : globalThis);

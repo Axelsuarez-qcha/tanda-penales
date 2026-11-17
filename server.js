@@ -10,7 +10,7 @@ const BY = {}; PLAYERS.forEach(p => BY[p.id] = p);
 
 const PORT = process.env.PORT || 3000;
 const INDEX = fs.readFileSync(path.join(__dirname, 'public', 'index.html'));
-const SOLD_MS = 6000, SHOT_MS = 15000, SHOW_MS = 5500, ORDER_MS = 60000, OVER_MS = 30000, IDLE_MS = 20 * 60 * 1000;
+const SOLD_MS = 6000, SHOT_MS = 15000, SHOW_MS = 5500, ORDER_MS = 15000, OVER_MS = 30000, IDLE_MS = 20 * 60 * 1000;
 
 const server = http.createServer((req, res) => {
   if (req.url.startsWith('/health')) { res.writeHead(200, { 'Content-Type': 'text/plain' }); return res.end('ok'); }
@@ -52,13 +52,14 @@ function auView(r, seat, now) {
     t: 'au', phase: a.phase, lot: A.lot, total: A.lots.length, lotSec: A.lotSec, until: a.until || 0,
     budget: [A.budget[seat], A.budget[1 - seat]], teams: [A.teams[seat], A.teams[1 - seat]],
     kickFirst: A.S === seat,
-    sold: A.log.map(e => ({ team: mir(seat, e.team), id: e.id, price: e.price, fair: e.fair, nobids: !!e.nobids, auto: !!e.auto })),
+    sold: A.log.map(e => ({ team: mir(seat, e.team), id: e.id, price: e.price, fair: e.fair, nobids: !!e.nobids, auto: !!e.auto, gk: !!e.gk, left: !!e.left })),
     cur: null, over: null, ready: [a.ready[seat], a.ready[1 - seat]]
   };
   if (a.phase === 'lot' && c) {
     v.cur = { start: c.start, end: c.end, bid: c.bid, leader: mir(seat, c.leader), done: [c.done[seat], c.done[1 - seat]], ext: c.ext,
-      clues: E.auClues(A, c.id, (now - c.start) / 1000) };
+      pair: c.pair || null, clues: c.pair ? [] : E.auClues(A, c.id, (now - c.start) / 1000) };
   }
+  if (a.phase === 'pick' && c && c.pick) v.cur = { pair: c.pair, pick: { team: mir(seat, c.pick.team), price: c.pick.price, nobids: !!c.pick.nobids, until: c.pick.until } };
   if (a.phase === 'over') v.over = { theme: { id: A.theme.id, name: A.theme.name }, wildGK: A.wildGK };
   return v;
 }
@@ -108,9 +109,13 @@ function tickRoom(r, now) {
   if (r.phase === 'au') {
     const a = r.au, A = a.A;
     if (a.phase === 'lot') {
-      if (E.auTick(A, now).length) { a.phase = 'sold'; a.until = now + SOLD_MS; return push(r); }
+      const ev = E.auTick(A, now);
+      if (ev.length) { if (ev[0].type === 'gkwin') { a.phase = 'pick'; a.until = A.cur.pick.until; return push(r); } a.phase = 'sold'; a.until = now + SOLD_MS; return push(r); }
+      if (A.cur.pair) return;
       const shown = E.auClues(A, A.cur.id, (now - A.cur.start) / 1000).filter(x => x.shown).length;
       if (shown !== a.sig) { a.sig = shown; push(r); }
+    } else if (a.phase === 'pick') {
+      if (E.auTick(A, now).length) { a.phase = 'sold'; a.until = now + SOLD_MS; push(r); }
     } else if (a.phase === 'sold' && now >= a.until) {
       E.auNext(A, now);
       if (A.over) { a.phase = 'over'; a.overAt = now; a.ready = [false, false]; } else { a.phase = 'lot'; a.sig = ''; }
@@ -163,7 +168,6 @@ function handle(ws, m) {
   switch (m.t) {
     case 'opts':
       if (seat !== 0 || r.phase !== 'lobby') return;
-      if (m.lotSec === 30 || m.lotSec === 60) r.opts.lotSec = m.lotSec;
       if (m.mode === 'libre' || m.mode === 'zonas') r.opts.mode = m.mode;
       return push(r);
     case 'start':
@@ -180,12 +184,19 @@ function handle(ws, m) {
     }
     case 'drop': if (r.phase === 'au' && r.au.phase === 'lot') { E.auDrop(r.au.A, seat); } return;
     case 'pass': if (r.phase === 'au' && r.au.phase === 'lot') { E.auPass(r.au.A, seat); } return;
+    case 'pick': if (r.phase === 'au' && r.au.phase === 'pick' && E.auPickGK(r.au.A, seat, Number(m.id)).length) { r.au.phase = 'sold'; r.au.until = now + SOLD_MS; push(r); } return;
     case 'ready': if (r.phase === 'au' && r.au.phase === 'over') { r.au.ready[seat] = true; push(r); } return;
     case 'order': {
       if (r.phase !== 'order' || r.ord.orders[seat]) return;
       const A = r.au.A, field = A.teams[seat].filter(id => !BY[id].gk), ids = Array.isArray(m.ids) ? m.ids.map(Number) : [];
       if (ids.length !== 5 || new Set(ids).size !== 5 || !ids.every(id => field.includes(id))) return;
       r.ord.orders[seat] = ids; return;
+    }
+    case 'chat': {
+      if (r.phase !== 'match' || !r.p[1 - seat]) return;
+      const now = Date.now(); if (now - (r.p[seat].lastChat || 0) < 700) return; r.p[seat].lastChat = now;
+      const text = String(m.text || '').replace(/[\u0000-\u001f\u007f<>]/g, '').trim().slice(0, 60); if (!text) return;
+      send(r.p[1 - seat].ws, { t: 'chat', text, n: Number(m.n) || 0 }); return;
     }
     case 'choice': {
       if (r.phase !== 'match' || r.m.stage !== 'wait') return;
